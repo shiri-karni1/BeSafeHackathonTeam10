@@ -5,9 +5,6 @@ import { init } from '@heyputer/puter.js/src/init.cjs';
 // Initialize Puter with the token from .env
 const puter = init(process.env.PUTER_TOKEN);
 
-// ⚠️ DEV MODE: Set to true to bypass AI checks (for testing DB/Frontend)
-const DEV_MODE = false;
-
 const SYSTEM_PROMPT = `
 You are a "Big Sister" Safety Agent for a teenage girl chat app.
 Your goal is to ensure conversations are safe, supportive, and medically accurate.
@@ -35,12 +32,6 @@ Input: "I'm sad" -> { "isSafe": true, "feedback": null, "reason": "Supportive" }
 `;
 
 export const evaluateMessage = async (message) => {
-  // ⚠️ DEV MODE BYPASS
-  if (DEV_MODE) {
-    console.log("⚠️ DEV MODE: Bypassing Safety Agent");
-    return { isSafe: true, feedback: "Dev Mode: Safety Check Bypassed", reason: "Testing" };
-  }
-
   try {
     // Combine system prompt and user message for Puter
     const fullPrompt = `${SYSTEM_PROMPT}\n\nMessage to analyze: "${message}"`;

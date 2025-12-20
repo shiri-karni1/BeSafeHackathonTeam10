@@ -37,7 +37,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./routes/*.js'], // Path to the API docs
+  apis: ['./routes/*.js', './docs/*.js'], // Path to the API docs
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
@@ -72,4 +72,5 @@ app.use('/questions', questionRoutes);
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Swagger Docs available at http://localhost:${PORT}/api-docs`);
 });
