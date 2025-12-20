@@ -167,7 +167,10 @@ router.post('/', async (req, res) => {
 
     // Safety Check
     const combinedText = `${title}\n${content}`;
+    
+    console.time("SafetyCheck-Question");
     const { isSafe, feedback, reason } = await evaluateMessage(combinedText);
+    console.timeEnd("SafetyCheck-Question");
 
     if (!isSafe) {
       return res.status(400).json({ 
@@ -248,7 +251,9 @@ router.post('/:id/messages', async (req, res) => {
     const { text, sender } = req.body;
 
     // 1. Check Safety
+    console.time("SafetyCheck-Message");
     const { isSafe, feedback, reason } = await evaluateMessage(text);
+    console.timeEnd("SafetyCheck-Message");
 
     if (!isSafe) {
       return res.status(400).json({ 
