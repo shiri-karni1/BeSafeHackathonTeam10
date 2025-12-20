@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import connectDB from './config/db.js';
 import questionRoutes from './routes/questions.js';
 import { setupSocket } from './socket/socketHandler.js';
 
@@ -14,6 +15,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+// Connect to Database
+connectDB();
 
 const app = express();
 const httpServer = createServer(app);

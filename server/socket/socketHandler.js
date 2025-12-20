@@ -1,59 +1,60 @@
-import questions from '../data/questionData.js';
-import { v4 as uuidv4 } from 'uuid';
 import { evaluateMessage } from '../services/safetyAgent.js';
+import Question from '../models/Question.js';
 
 export const setupSocket = (io) => {
   io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    console.log(`User Connected: ${socket.id}`);
 
-    // Join a specific chat room (e.g., based on a question ID)
     socket.on('join_room', (roomId) => {
       socket.join(roomId);
-      console.log(`User ${socket.id} joined room ${roomId}`);
+      console.log(`User with ID: ${socket.id} joined room: ${roomId}`);
     });
 
-    // Handle sending a message
     socket.on('send_message', async (data) => {
       const { roomId, message, username } = data;
 
-      console.log(`Message received in room ${roomId}:`, message);
-
-      // Call the Safety Agent
+      // 1. Safety Check
       const { isSafe, feedback, reason } = await evaluateMessage(message);
 
       if (isSafe) {
-        // Find the question/room to save the message
-        const question = questions.find(q => q.id === roomId);
-        
-        if (question) {
+        try {
+          // 2. Save to MongoDB
+          const question = await Question.findById(roomId);
+          
+          if (question) {
             const newMessage = {
-                id: uuidv4(),
-                text: message,
-                sender: username, // or userId depending on your auth
-                timestamp: new Date().toISOString(),
-                feedback: feedback
+              text: message,
+              sender: username,
+              isSafe: true,
+              feedback: feedback // Save the positive feedback too if it exists
             };
 
-            // Save to "database"
             question.messages.push(newMessage);
+            await question.save();
 
-            // Broadcast the message to everyone in the room
-            io.to(roomId).emit('receive_message', newMessage);
-        } else {
-            console.error(`Room ${roomId} not found`);
+            // 3. Broadcast to Room
+            // We send the full object so frontend has timestamps/feedback
+            // The last message in the array has the new _id and createdAt
+            const savedMessage = question.messages[question.messages.length - 1];
+            io.to(roomId).emit('receive_message', savedMessage);
+          } else {
+             console.error(`Room (Question) ${roomId} not found in DB`);
+          }
+        } catch (error) {
+          console.error("DB Error:", error);
         }
       } else {
-        // Notify the sender that the message was blocked
+        // Blocked
         socket.emit('message_blocked', {
           message: "Message blocked by Safety Agent",
           feedback: feedback,
-          reason: reason || 'Message content violates safety guidelines.',
+          reason: reason
         });
       }
     });
 
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+      console.log('User Disconnected', socket.id);
     });
   });
 };
