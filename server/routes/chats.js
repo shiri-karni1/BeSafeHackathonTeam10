@@ -88,6 +88,11 @@ router.post('/:id/messages', async (req, res) => {
       return res.status(404).json({ message: 'Chat not found' });
     }
 
+    // Ensure Socket.IO is available before proceeding
+    if (!req.io) {
+      return res.status(500).json({ message: 'Socket.IO is not initialized. Cannot send message.' });
+    }
+
     const newMessage = { text, sender, isSafe, feedback };
     chat.messages.push(newMessage);
     await chat.save();
@@ -96,9 +101,7 @@ router.post('/:id/messages', async (req, res) => {
     const savedMessage = chat.messages[chat.messages.length - 1];
 
     // 3. Emit to Socket.IO Room (Real-time update)
-    if (req.io) {
-      req.io.to(id).emit('receive_message', savedMessage);
-    }
+    req.io.to(id).emit('receive_message', savedMessage);
 
     // Return the last message added
     res.status(201).json(savedMessage);
