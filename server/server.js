@@ -50,8 +50,6 @@ app.use(cors({
   origin: process.env.CLIENT_URL
 }));
 
-app.use('/questions', questionRoutes);
-
 // Initialize Socket.IO
 const io = new Server(httpServer, {
   cors: {
@@ -61,6 +59,14 @@ const io = new Server(httpServer, {
 });
 
 setupSocket(io);
+
+// Make io available in routes
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+app.use('/questions', questionRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
