@@ -3,7 +3,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import rubberDuckRoutes from './routes/rubberDucks.js'; // Import the routes
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import questionRoutes from './routes/questions.js';
+import { setupSocket } from './socket/socketHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +16,28 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'BeSafe Hackathon API',
+      version: '1.0.0',
+      description: 'API documentation for the BeSafe Hackathon backend',
+    },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT || 3000}`,
+      },
+    ],
+  },
+  apis: ['./routes/*.js'], // Path to the API docs
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images'))); // Serve static images
@@ -19,11 +46,20 @@ app.use(cors({
   origin: process.env.CLIENT_URL
 }));
 
-// Use the routes file for all `/ducks` routes
-app.use('/ducks', rubberDuckRoutes);
+app.use('/questions', questionRoutes);
+
+// Initialize Socket.IO
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST"]
+  }
+});
+
+setupSocket(io);
 
 // Start server
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
