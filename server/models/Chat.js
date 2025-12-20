@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema({
   feedback: String
 });
 
-const questionSchema = new mongoose.Schema({
+const chatSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   username: { type: String, required: true },
@@ -16,6 +16,6 @@ const questionSchema = new mongoose.Schema({
   messages: [messageSchema]
 });
 
-const Question = mongoose.model('Question', questionSchema);
+const Chat = mongoose.model('Chat', chatSchema);
 
-export default Question;
+export default Chat;

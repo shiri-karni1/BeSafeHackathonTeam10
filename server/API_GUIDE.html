@@ -74,36 +74,46 @@
 
     <h2>🚀 Getting Started</h2>
     <ol>
+        <li><strong>Install Dependencies</strong> (Do this once):
+            <pre><code>cd server
+npm install</code></pre>
+        </li>
         <li><strong>Start the Server</strong> (Runs Database + API + Socket):
             <pre><code>cd server
 npm run dev</code></pre>
-            <p><em>Server runs on:</em> <code>http://localhost:3000</code><br>
-            <em>Swagger Docs:</em> <code>http://localhost:3000/api-docs</code></p>
+            <p><em>Server runs on:</em> <code>http://localhost:5000</code><br>
+            <em>Swagger Docs:</em> <code>http://localhost:5000/api-docs</code></p>
         </li>
         <li><strong>Connect MongoDB Compass:</strong>
             <ul>
                 <li>Open Compass.</li>
                 <li>Paste this connection string: <code>mongodb://localhost:27017</code></li>
                 <li>Click <strong>Connect</strong>.</li>
-                <li>You will see a database named <code>besafe_hackathon</code> (once you create the first question).</li>
+                <li>You will see a database named <code>besafe_hackathon</code> (once you create the first chat).</li>
             </ul>
         </li>
     </ol>
+
+    <h2>🧪 Testing</h2>
+    <p>We have a built-in test suite to verify the API and Real-Time Sockets.</p>
+    <pre><code>cd server
+node testSocket.js</code></pre>
+    <p>This will simulate two users (Alice & Bob) chatting to ensure messages are broadcasted correctly and unsafe messages are blocked.</p>
 
     <hr>
 
     <h2>🗄️ Database Models</h2>
 
-    <h3>Question Object</h3>
+    <h3>Chat Object</h3>
     <table>
         <thead>
             <tr><th>Field</th><th>Type</th><th>Description</th></tr>
         </thead>
         <tbody>
             <tr><td><code>_id</code></td><td>String</td><td>Unique ID (auto-generated)</td></tr>
-            <tr><td><code>title</code></td><td>String</td><td>Short summary of the question</td></tr>
+            <tr><td><code>title</code></td><td>String</td><td>Short summary of the chat</td></tr>
             <tr><td><code>content</code></td><td>String</td><td>Detailed description</td></tr>
-            <tr><td><code>username</code></td><td>String</td><td>Name of the user who asked</td></tr>
+            <tr><td><code>username</code></td><td>String</td><td>Name of the user who started the chat</td></tr>
             <tr><td><code>createdAt</code></td><td>Date</td><td>Timestamp</td></tr>
             <tr><td><code>messages</code></td><td>Array</td><td>List of Message objects (see below)</td></tr>
         </tbody>
@@ -128,30 +138,30 @@ npm run dev</code></pre>
 
     <h2>🌐 REST API Routes</h2>
 
-    <h3>1. Get All Questions (Home Page)</h3>
+    <h3>1. Get All Chats (Home Page)</h3>
     <ul>
-        <li><strong>Endpoint:</strong> <code>GET /questions</code></li>
-        <li><strong>Description:</strong> Returns list of questions <strong>without</strong> the messages (for performance).</li>
+        <li><strong>Endpoint:</strong> <code>GET /chats</code></li>
+        <li><strong>Description:</strong> Returns list of chats <strong>without</strong> the messages (for performance).</li>
         <li><strong>Response:</strong> <code>[ { id, title, content, username... }, ... ]</code></li>
     </ul>
 
-    <h3>2. Get Single Question (Chat Room)</h3>
+    <h3>2. Get Single Chat (Chat Room)</h3>
     <ul>
-        <li><strong>Endpoint:</strong> <code>GET /questions/:id</code></li>
-        <li><strong>Description:</strong> Returns the full question object <strong>including</strong> the <code>messages</code> array.</li>
+        <li><strong>Endpoint:</strong> <code>GET /chats/:id</code></li>
+        <li><strong>Description:</strong> Returns the full chat object <strong>including</strong> the <code>messages</code> array.</li>
         <li><strong>Use Case:</strong> Call this when entering a chat page to load history.</li>
     </ul>
 
-    <h3>3. Create Question</h3>
+    <h3>3. Create Chat</h3>
     <ul>
-        <li><strong>Endpoint:</strong> <code>POST /questions</code></li>
+        <li><strong>Endpoint:</strong> <code>POST /chats</code></li>
         <li><strong>Body:</strong> <code>{ "title": "...", "content": "...", "username": "..." }</code></li>
         <li><strong>Safety:</strong> Runs AI check on Title + Content. Returns <code>400</code> if unsafe.</li>
     </ul>
 
     <h3>4. Send Message</h3>
     <ul>
-        <li><strong>Endpoint:</strong> <code>POST /questions/:id/messages</code></li>
+        <li><strong>Endpoint:</strong> <code>POST /chats/:id/messages</code></li>
         <li><strong>Body:</strong> <code>{ "text": "...", "sender": "..." }</code></li>
         <li><strong>Safety:</strong> Runs AI check. Returns <code>400</code> if unsafe.</li>
         <li><strong>Side Effect:</strong> Automatically broadcasts the message to the Socket Room.</li>
@@ -164,13 +174,13 @@ npm run dev</code></pre>
 
     <h3>How to Connect (Frontend)</h3>
     <pre><code>import io from 'socket.io-client';
-const socket = io('http://localhost:3000');</code></pre>
+const socket = io('http://localhost:5000');</code></pre>
 
     <h3>Events</h3>
 
     <h4>1. <code>join_room</code> (Client -> Server)</h4>
-    <p><strong>When to use:</strong> When the user opens a specific question page.</p>
-    <pre><code>// Join the room for question ID "123"
+    <p><strong>When to use:</strong> When the user opens a specific chat page.</p>
+    <pre><code>// Join the room for chat ID "123"
 socket.emit('join_room', "123");</code></pre>
 
     <h4>2. <code>receive_message</code> (Server -> Client)</h4>

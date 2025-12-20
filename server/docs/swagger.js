@@ -18,7 +18,7 @@
  *           type: string
  *           format: date-time
  *           description: The time the message was sent
- *     Question:
+ *     Chat:
  *       type: object
  *       required:
  *         - title
@@ -27,20 +27,20 @@
  *       properties:
  *         id:
  *           type: string
- *           description: The auto-generated id of the question
+ *           description: The auto-generated id of the chat
  *         title:
  *           type: string
- *           description: The title of the question
+ *           description: The title of the chat
  *         content:
  *           type: string
- *           description: The detailed content of the question
+ *           description: The detailed content of the chat
  *         username:
  *           type: string
- *           description: The user who asked the question
+ *           description: The user who started the chat
  *         timestamp:
  *           type: string
  *           format: date-time
- *           description: The time the question was created
+ *           description: The time the chat was created
  *         messages:
  *           type: array
  *           items:
@@ -57,57 +57,57 @@
 /**
  * @swagger
  * tags:
- *   name: Questions
- *   description: The questions/chat managing API
+ *   name: Chats
+ *   description: The chats managing API
  */
 
 /**
  * @swagger
- * /questions:
+ * /chats:
  *   get:
- *     summary: Returns the list of all questions
- *     tags: [Questions]
+ *     summary: Returns the list of all chats
+ *     tags: [Chats]
  *     responses:
  *       200:
- *         description: The list of the questions
+ *         description: The list of the chats
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Question'
+ *                 $ref: '#/components/schemas/Chat'
  */
 
 /**
  * @swagger
- * /questions/{id}:
+ * /chats/{id}:
  *   get:
- *     summary: Get a question by id
- *     tags: [Questions]
+ *     summary: Get a chat by id
+ *     tags: [Chats]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: The question id
+ *         description: The chat id
  *     responses:
  *       200:
- *         description: The question description by id
+ *         description: The chat description by id
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Question'
+ *               $ref: '#/components/schemas/Chat'
  *       404:
- *         description: The question was not found
+ *         description: The chat was not found
  */
 
 /**
  * @swagger
- * /questions:
+ * /chats:
  *   post:
- *     summary: Create a new question (Start a chat)
- *     tags: [Questions]
+ *     summary: Create a new chat
+ *     tags: [Chats]
  *     requestBody:
  *       required: true
  *       content:
@@ -127,28 +127,28 @@
  *                 type: string
  *     responses:
  *       201:
- *         description: The question was successfully created
+ *         description: The chat was successfully created
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Question'
+ *               $ref: '#/components/schemas/Chat'
  *       400:
  *         description: Missing required fields or Content blocked by Safety Agent
  */
 
 /**
  * @swagger
- * /questions/{id}/messages:
+ * /chats/{id}/messages:
  *   post:
- *     summary: Add a message to a question chat
- *     tags: [Questions]
+ *     summary: Add a message to a chat
+ *     tags: [Chats]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: The question id
+ *         description: The chat id
  *     requestBody:
  *       required: true
  *       content:
@@ -187,5 +187,5 @@
  *                   type: string
  *                   example: "Bullying"
  *       404:
- *         description: Question not found
+ *         description: Chat not found
  */

@@ -8,7 +8,7 @@ import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import connectDB from './config/db.js';
-import questionRoutes from './routes/questions.js';
+import chatRoutes from './routes/chats.js';
 import { setupSocket } from './socket/socketHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -66,7 +66,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/questions', questionRoutes);
+app.use('/chats', chatRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

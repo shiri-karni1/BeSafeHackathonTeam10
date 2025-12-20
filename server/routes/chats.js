@@ -1,36 +1,36 @@
 import express from 'express';
-import Question from '../models/Question.js';
+import Chat from '../models/Chat.js';
 import { evaluateMessage } from '../services/safetyAgent.js';
 
 const router = express.Router();
 
-// get all question titles (chats)
+// get all chat titles
 router.get('/', async (req, res) => {
   try {
-    // Return questions without the messages array (lighter payload for home page)
-    const questions = await Question.find().select('-messages').sort({ createdAt: -1 });
-    res.json(questions);
+    // Return chats without the messages array (lighter payload for home page)
+    const chats = await Chat.find().select('-messages').sort({ createdAt: -1 });
+    res.json(chats);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Join a specific question (chat room)
-// Get question + answers by ID
+// Join a specific chat room
+// Get chat + messages by ID
 router.get('/:id', async (req, res) => {
   try {
-    const question = await Question.findById(req.params.id);
-    if (question) {
-      res.json(question);
+    const chat = await Chat.findById(req.params.id);
+    if (chat) {
+      res.json(chat);
     } else {
-      res.status(404).json({ message: 'Question not found' });
+      res.status(404).json({ message: 'Chat not found' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Create a new question (Start a chat)
+// Create a new chat
 router.post('/', async (req, res) => {
   try {
     const { title, content, username } = req.body;
@@ -38,31 +38,31 @@ router.post('/', async (req, res) => {
     // Safety Check
     const combinedText = `${title}\n${content}`;
     
-    console.time("SafetyCheck-Question");
+    console.time("SafetyCheck-Chat");
     const { isSafe, feedback, reason } = await evaluateMessage(combinedText);
-    console.timeEnd("SafetyCheck-Question");
+    console.timeEnd("SafetyCheck-Chat");
 
     if (!isSafe) {
       return res.status(400).json({ 
-        message: 'Question blocked by Safety Agent', 
+        message: 'Chat blocked by Safety Agent', 
         feedback, 
         reason 
       });
     }
 
-    const newQuestion = await Question.create({
+    const newChat = await Chat.create({
       title,
       content,
       username,
       messages: []
     });
-    res.status(201).json(newQuestion);
+    res.status(201).json(newChat);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// Add answer to a question (message in chat room)
+// Add message to a chat
 router.post('/:id/messages', async (req, res) => {
   try {
     const { id } = req.params;
@@ -81,19 +81,19 @@ router.post('/:id/messages', async (req, res) => {
       });
     }
 
-    // 2. Find Question and Add Message
-    const question = await Question.findById(id);
+    // 2. Find Chat and Add Message
+    const chat = await Chat.findById(id);
     
-    if (!question) {
-      return res.status(404).json({ message: 'Question not found' });
+    if (!chat) {
+      return res.status(404).json({ message: 'Chat not found' });
     }
 
     const newMessage = { text, sender, isSafe, feedback };
-    question.messages.push(newMessage);
-    await question.save();
+    chat.messages.push(newMessage);
+    await chat.save();
 
     // Get the saved message (with _id and timestamp)
-    const savedMessage = question.messages[question.messages.length - 1];
+    const savedMessage = chat.messages[chat.messages.length - 1];
 
     // 3. Emit to Socket.IO Room (Real-time update)
     if (req.io) {
