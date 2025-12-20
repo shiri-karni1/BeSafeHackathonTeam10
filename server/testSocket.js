@@ -117,6 +117,7 @@ async function runComprehensiveTest() {
   } finally {
     socketAlice.disconnect();
     socketBob.disconnect();
+    // eslint-disable-next-line n/no-process-exit
     process.exit(0);
   }
 }

@@ -6,6 +6,8 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error: ${error.message}`);
+    process.exitCode = 1;
+    // eslint-disable-next-line n/no-process-exit
     process.exit(1);
   }
 };
