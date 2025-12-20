@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeSafe API Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1, h2, h3 { color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+        h1 { font-size: 2.5em; margin-bottom: 0.5em; }
+        h2 { margin-top: 2em; }
+        code {
+            background-color: #f6f8fa;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 0.85em;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+        }
+        pre code { background-color: transparent; padding: 0; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+        th, td { border: 1px solid #dfe2e5; padding: 6px 13px; text-align: left; }
+        th { background-color: #f6f8fa; }
+        tr:nth-child(2n) { background-color: #f8f8f8; }
+        blockquote { border-left: 4px solid #dfe2e5; color: #6a737d; padding-left: 1em; margin: 0; }
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #0366d6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        @media print {
+            .print-btn { display: none; }
+            body { max-width: 100%; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">Save as PDF</button>
+
+    <h1>Backend API & Architecture Guide</h1>
+    <p>This guide explains how to interact with the BeSafe Backend (Node.js + Express + MongoDB + Socket.IO).</p>
+
+    <h2>📦 Prerequisites (Install These First)</h2>
+    <p>Before running the project, every team member needs to install:</p>
+    <ol>
+
+        <li><strong>MongoDB Community Server:</strong> <a href="https://www.mongodb.com/try/download/community">Download Here</a>
+            <ul>
+                <li><em>Why?</em> This gives you the <code>mongod</code> command needed to run the database locally.</li>
+                <li><strong>Mac Users:</strong> You can also install via Homebrew: <code>brew tap mongodb/brew && brew install mongodb-community</code></li>
+            </ul>
+        </li>
+        <li><strong>MongoDB Compass:</strong> <a href="https://www.mongodb.com/try/download/compass">Download Here</a> (The GUI to see the data)</li>
+    </ol>
+
+    <h2>🚀 Getting Started</h2>
+    <ol>
+        <li><strong>Install Dependencies</strong> (Do this once):
+            <pre><code>cd server
+npm install</code></pre>
+        </li>
+        <li><strong>Start the Server</strong> (Runs Database + API + Socket):
+            <pre><code>cd server
+npm run dev</code></pre>
+            <p><em>Server runs on:</em> <code>http://localhost:5000</code><br>
+            <em>Swagger Docs:</em> <code>http://localhost:5000/api-docs</code></p>
+        </li>
+        <li><strong>Connect MongoDB Compass:</strong>
+            <ul>
+                <li>Open Compass.</li>
+                <li>Paste this connection string: <code>mongodb://localhost:27017</code></li>
+                <li>Click <strong>Connect</strong>.</li>
+                <li>You will see a database named <code>besafe_hackathon</code> (once you create the first chat).</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>🧪 Testing</h2>
+    <p>We have a built-in test suite to verify the API and Real-Time Sockets.</p>
+    <pre><code>cd server
+node testSocket.js</code></pre>
+    <p>This will simulate two users (Alice & Bob) chatting to ensure messages are broadcasted correctly and unsafe messages are blocked.</p>
+
+    <hr>
+
+    <h2>🗄️ Database Models</h2>
+
+    <h3>Chat Object</h3>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>_id</code></td><td>String</td><td>Unique ID (auto-generated)</td></tr>
+            <tr><td><code>title</code></td><td>String</td><td>Short summary of the chat</td></tr>
+            <tr><td><code>content</code></td><td>String</td><td>Detailed description</td></tr>
+            <tr><td><code>username</code></td><td>String</td><td>Name of the user who started the chat</td></tr>
+            <tr><td><code>createdAt</code></td><td>Date</td><td>Timestamp</td></tr>
+            <tr><td><code>messages</code></td><td>Array</td><td>List of Message objects (see below)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Message Object</h3>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>_id</code></td><td>String</td><td>Unique ID</td></tr>
+            <tr><td><code>text</code></td><td>String</td><td>The message content</td></tr>
+            <tr><td><code>sender</code></td><td>String</td><td>Username of sender</td></tr>
+            <tr><td><code>isSafe</code></td><td>Boolean</td><td>Result of AI Safety Check</td></tr>
+            <tr><td><code>feedback</code></td><td>String</td><td>AI feedback (if unsafe or helpful tip)</td></tr>
+            <tr><td><code>createdAt</code></td><td>Date</td><td>Timestamp</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>🌐 REST API Routes</h2>
+
+    <h3>1. Get All Chats (Home Page)</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>GET /chats</code></li>
+        <li><strong>Description:</strong> Returns list of chats <strong>without</strong> the messages (for performance).</li>
+        <li><strong>Response:</strong> <code>[ { id, title, content, username... }, ... ]</code></li>
+    </ul>
+
+    <h3>2. Get Single Chat (Chat Room)</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>GET /chats/:id</code></li>
+        <li><strong>Description:</strong> Returns the full chat object <strong>including</strong> the <code>messages</code> array.</li>
+        <li><strong>Use Case:</strong> Call this when entering a chat page to load history.</li>
+    </ul>
+
+    <h3>3. Create Chat</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /chats</code></li>
+        <li><strong>Body:</strong> <code>{ "title": "...", "content": "...", "username": "..." }</code></li>
+        <li><strong>Safety:</strong> Runs AI check on Title + Content. Returns <code>400</code> if unsafe.</li>
+    </ul>
+
+    <h3>4. Send Message</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /chats/:id/messages</code></li>
+        <li><strong>Body:</strong> <code>{ "text": "...", "sender": "..." }</code></li>
+        <li><strong>Safety:</strong> Runs AI check. Returns <code>400</code> if unsafe.</li>
+        <li><strong>Side Effect:</strong> Automatically broadcasts the message to the Socket Room.</li>
+    </ul>
+
+    <hr>
+
+    <h2>🔌 Real-Time (Socket.IO)</h2>
+    <p>We use Socket.IO <strong>only</strong> for receiving new messages. Sending is done via the REST API (Route #4 above).</p>
+
+    <h3>How to Connect (Frontend)</h3>
+    <pre><code>import io from 'socket.io-client';
+const socket = io('http://localhost:5000');</code></pre>
+
+    <h3>Events</h3>
+
+    <h4>1. <code>join_room</code> (Client -> Server)</h4>
+    <p><strong>When to use:</strong> When the user opens a specific chat page.</p>
+    <pre><code>// Join the room for chat ID "123"
+socket.emit('join_room', "123");</code></pre>
+
+    <h4>2. <code>receive_message</code> (Server -> Client)</h4>
+    <p><strong>When to use:</strong> Listen for this to update the UI instantly when ANYONE sends a message.</p>
+    <pre><code>socket.on('receive_message', (newMessage) => {
+  console.log("New message received:", newMessage);
+  // Add newMessage to your state/list
+});</code></pre>
+
+    <hr>
+
+    <h2>🛡️ AI Safety System</h2>
+    <ul>
+        <li><strong>Engine:</strong> Puter.js (AI Agent)</li>
+        <li><strong>Behavior:</strong> Every <code>POST</code> request is analyzed.</li>
+        <li><strong>Latency:</strong> ~5-7 seconds per message.</li>
+        <li><strong>Frontend Tip:</strong> Use "Optimistic UI" (show message immediately as "sending...") so the user doesn't feel the delay.</li>
+    </ul>
+</body>
+</html>
