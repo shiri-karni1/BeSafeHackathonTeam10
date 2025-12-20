@@ -1,7 +1,12 @@
-import puter from '@heyputer/puter.js';
+import dotenv from 'dotenv';
+dotenv.config();
+import { init } from '@heyputer/puter.js/src/init.cjs';
+
+// Initialize Puter with the token from .env
+const puter = init(process.env.PUTER_TOKEN);
 
 // ⚠️ DEV MODE: Set to true to bypass AI checks (for testing DB/Frontend)
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 const SYSTEM_PROMPT = `
 You are a "Big Sister" Safety Agent for a teenage girl chat app.
