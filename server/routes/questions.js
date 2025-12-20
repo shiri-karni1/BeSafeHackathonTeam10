@@ -159,11 +159,24 @@ router.get('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Question'
  *       400:
- *         description: Missing required fields
+ *         description: Missing required fields or Content blocked by Safety Agent
  */
 router.post('/', async (req, res) => {
   try {
     const { title, content, username } = req.body;
+
+    // Safety Check
+    const combinedText = `${title}\n${content}`;
+    const { isSafe, feedback, reason } = await evaluateMessage(combinedText);
+
+    if (!isSafe) {
+      return res.status(400).json({ 
+        message: 'Question blocked by Safety Agent', 
+        feedback, 
+        reason 
+      });
+    }
+
     const newQuestion = await Question.create({
       title,
       content,
