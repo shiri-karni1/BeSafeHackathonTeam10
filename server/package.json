@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev": "nodemon server",
+    "dev": "mkdir -p /tmp/mongod && concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath /tmp/mongod\" \"nodemon server\"",
     "lint": "eslint ."
   },
   "keywords": [],
