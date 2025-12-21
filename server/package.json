@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev": "node -e \"require('fs').mkdirSync('.mongo_data', {recursive: true})\" && npx concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath .mongo_data\" \"npx nodemon server\"",
+    "dev": "node -e \"require('fs').mkdirSync('.mongo_data', {recursive: true})\" && concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath .mongo_data\" \"nodemon server\"",
     "lint": "eslint ."
   },
   "keywords": [],

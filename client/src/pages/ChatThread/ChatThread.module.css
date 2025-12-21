@@ -1,0 +1,7 @@
+.chatThread {
+    display: flex;
+    flex-direction: column;
+    height: 80%;
+    justify-content: space-between;
+    background-color: #eaf1f5;
+}

@@ -1,17 +1,46 @@
-nav {
+.nav {
     background-color: #a37b94;
     overflow: hidden;
-    min-width: fit-content;
+    width: 70%;
     border-radius: 15px; 
     align-self: center;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px;
 }
 
 .navImg {
-    justify-content: center;
-    width: 5%;
-    height: 5%;
-    align-content: center;
-    padding: 2%;
-    color: white;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
 
+.navContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.active {
+    background-color: #7a5a6f;
+    border-radius: 10px;
+    height: 35px;
+    width: 33%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.nonactive {
+    background-color: transparent;
+    border-radius: 10px;
+    height: 35px;
+    width: 33%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
 }
