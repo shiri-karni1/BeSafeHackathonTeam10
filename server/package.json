@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev": "node -e \"require('fs').mkdirSync('.mongo_data', {recursive: true})\" && concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath .mongo_data\" \"nodemon server\"",
+    "dev": "node -e \"require('fs').mkdirSync('.mongo_data', {recursive: true})\" && npx concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath .mongo_data\" \"npx nodemon server\"",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -28,6 +28,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "brace-expansion": "^1.1.12",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^17.23.1",

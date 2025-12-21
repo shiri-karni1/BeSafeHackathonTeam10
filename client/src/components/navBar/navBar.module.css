@@ -1,0 +1,17 @@
+nav {
+    background-color: #a37b94;
+    overflow: hidden;
+    min-width: fit-content;
+    border-radius: 15px; 
+    align-self: center;
+}
+
+.navImg {
+    justify-content: center;
+    width: 5%;
+    height: 5%;
+    align-content: center;
+    padding: 2%;
+    color: white;
+
+}
