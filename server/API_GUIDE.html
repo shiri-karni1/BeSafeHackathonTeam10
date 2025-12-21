@@ -63,12 +63,6 @@
     <p>Before running the project, every team member needs to install:</p>
     <ol>
 
-        <li><strong>MongoDB Community Server:</strong> <a href="https://www.mongodb.com/try/download/community">Download Here</a>
-            <ul>
-                <li><em>Why?</em> This gives you the <code>mongod</code> command needed to run the database locally.</li>
-                <li><strong>Mac Users:</strong> You can also install via Homebrew: <code>brew tap mongodb/brew && brew install mongodb-community</code></li>
-            </ul>
-        </li>
         <li><strong>MongoDB Compass:</strong> <a href="https://www.mongodb.com/try/download/compass">Download Here</a> (The GUI to see the data)</li>
     </ol>
 
@@ -81,13 +75,13 @@ npm install</code></pre>
         <li><strong>Start the Server</strong> (Runs Database + API + Socket):
             <pre><code>cd server
 npm run dev</code></pre>
-            <p><em>Server runs on:</em> <code>http://localhost:5000</code><br>
-            <em>Swagger Docs:</em> <code>http://localhost:5000/api-docs</code></p>
+            <p><em>Server runs on:</em> <code>http://localhost:8080</code><br>
+            <em>Swagger Docs:</em> <code>http://localhost:8080/api-docs</code></p>
         </li>
         <li><strong>Connect MongoDB Compass:</strong>
             <ul>
                 <li>Open Compass.</li>
-                <li>Paste this connection string: <code>mongodb://localhost:27017</code></li>
+                <li>Paste the Atlas connection string from your <code>.env</code> file.</li>
                 <li>Click <strong>Connect</strong>.</li>
                 <li>You will see a database named <code>besafe_hackathon</code> (once you create the first chat).</li>
             </ul>
@@ -174,7 +168,7 @@ node testSocket.js</code></pre>
 
     <h3>How to Connect (Frontend)</h3>
     <pre><code>import io from 'socket.io-client';
-const socket = io('http://localhost:5000');</code></pre>
+const socket = io('http://localhost:8080');</code></pre>
 
     <h3>Events</h3>
 

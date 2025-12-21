@@ -47,14 +47,14 @@ Environment variables are used to configure your application without hardcoding 
 
 Make a copy of the `.env.example` file under the `server` folder and name it `.env`. This file contains the following environment variables (you don't need to touch them at this point):
    - `CLIENT_URL` - this should match the URL of the client, which is what you'll see at the address bar of your browser after running your client (via `npm start`).
-   - `PORT` - This variable defines the port on which your Express server will run. By default, this is set to `5000`, but you can change it to any available port number.
+   - `PORT` - This variable defines the port on which your Express server will run. By default, this is set to `8080`, but you can change it to any available port number.
 
 #### Configure the Frontend (client)
 
 Make a copy of the `.env.example` file under the `client` folder and name it `.env`. 
 This file contains the following environment variable (you don't need to touch them at this point):
 
-* `VITE_SERVER_API_URL`: This variable contains the URL of your backend API. It tells your client where to send requests to interact with the server. By default, this should be set to http://localhost:5000/, but you should change it to match your server's actual URL if different (where 5000 is the `PORT` you defined in the server `.env` file above).
+* `VITE_SERVER_API_URL`: This variable contains the URL of your backend API. It tells your client where to send requests to interact with the server. By default, this should be set to http://localhost:8080/, but you should change it to match your server's actual URL if different (where 8080 is the `PORT` you defined in the server `.env` file above).
 
 ## Usage
 
@@ -63,7 +63,7 @@ This section explains how to use the application once it’s set up and configur
 ### Start the Server
 1. Open a terminal in the root folder of the cloned repository, and navigate to the `server` directory: `cd server`
 1. Start the Express server in development mode: `npm run dev`
-   - By default, the server will run on `http://localhost:5000` (see configuration section above)
+   - By default, the server will run on `http://localhost:8080` (see configuration section above)
 
 ### Run the Client
 1. Open a **new** terminal in the root folder of the cloned repository, and navigate to the `client` directory: `cd client`
