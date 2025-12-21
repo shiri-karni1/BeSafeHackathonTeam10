@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import fetch from "node-fetch";
 
-const SERVER_URL = "http://localhost:5000";
+const SERVER_URL = "http://localhost:8080";
 
 // Helper to create a promise that resolves when a specific event is received
 const waitForEvent = (socket, event) => {

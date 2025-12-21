@@ -31,6 +31,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new chat
+// TODO: add inline code to controller services mvc pattern
 router.post('/', async (req, res) => {
   try {
     const { title, content, username } = req.body;
@@ -42,6 +43,7 @@ router.post('/', async (req, res) => {
     const { isSafe, feedback, reason } = await evaluateMessage(combinedText);
     console.timeEnd("SafetyCheck-Chat");
 
+    // TODO: change status code to 200 ok
     if (!isSafe) {
       return res.status(400).json({ 
         message: 'Chat blocked by Safety Agent', 
@@ -73,6 +75,7 @@ router.post('/:id/messages', async (req, res) => {
     const { isSafe, feedback, reason } = await evaluateMessage(text);
     console.timeEnd("SafetyCheck-Message");
 
+    // TODO: change status code to 200 ok
     if (!isSafe) {
       return res.status(400).json({ 
         message: 'Message blocked by Safety Agent', 

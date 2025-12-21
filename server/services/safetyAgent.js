@@ -31,6 +31,9 @@ Input: "You are ugly" -> { "isSafe": false, "feedback": "Be kind.", "reason": "B
 Input: "I'm sad" -> { "isSafe": true, "feedback": null, "reason": "Supportive" }
 `;
 
+// add more examples as needed
+// fine tune the prompt for better accuracy
+
 export const evaluateMessage = async (message) => {
   try {
     // Combine system prompt and user message for Puter
@@ -46,6 +49,8 @@ export const evaluateMessage = async (message) => {
     
     // Puter returns a string (or object depending on version), we need to ensure it's a string first
     let content = typeof response === 'object' ? response.message?.content || JSON.stringify(response) : response;
+
+    // TODO: verify content is a string
 
     // Clean up potential markdown formatting (e.g. ```json ... ```)
     if (typeof content === 'string') {
