@@ -1,22 +1,26 @@
 import styles from './ChatHeader.module.css';
 import profileIcon from '../../assets/profile-girl-icon.svg';
-import participantsIcon from '../../assets/people.svg';
 import PropTypes from 'prop-types';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const ChatHeader = ({ chat }) => {
+  const navigate = useNavigate();
+
+  const handleBackClick = () => {
+    navigate(-1); // Navigate to the previous page
+  }
+
   if (!chat) {
     return null;
   }
-
-  // Static data for fields not in database
-  const staticData = {
-    category: 'בריאות האישה',
-    participantsCount: 2
-  };
-
   return (
     <div className={styles.chatHeader}>
+      <div className={styles.backButtonContainer}>
+      <a href="/"><button className={styles.backButton} onClick={handleBackClick}><ChevronLeftIcon /></button></a>
+      </div>
       <div className={styles.headerTitleAndProfile}>
         <div className = {styles.profileContainer}>
           <img src={profileIcon} alt="User Avatar" className={styles.avatar} />
@@ -26,16 +30,6 @@ const ChatHeader = ({ chat }) => {
       </div>
         <div className={styles.subtitle}>
           <p>{chat.content}</p>
-        </div>
-        <div className={styles.participantsAndTopic}>
-          <div className={styles.participants}>
-            <img src={participantsIcon} alt="Participants Icon" className={styles.participantsIcon} />
-            <p> {staticData.participantsCount} </p>
-            <p>משתתפות </p>
-          </div>
-          <div className={styles.category}>
-            <p>{staticData.category}</p>
-          </div>
         </div>
     </div>
   );

@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   font-family: "Varela Round", sans-serif;
+  position: relative;
 }
 
 .headerTitleAndProfile {
@@ -72,4 +73,18 @@
   background-color: #655454;
   border-radius: 25px;
   padding: 5px 10px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.5rem;
+  align-self: start;
+}
+
+.backButtonContainer {
+  display: flex;
+  justify-content: start;
 }
