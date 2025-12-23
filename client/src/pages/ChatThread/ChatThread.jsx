@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ChatHeader from "../../components/ChatHeader/ChatHeader.jsx";
 import styles from "./ChatThread.module.css";
-import NavBar from "../../components/navBar/navBar.jsx";
 import api from '../../services/api.js';
+import ChatBoard from '../../components/ChatBoard/ChatBoard.jsx';
+
 
 export default function ChatThread() {
   const { chatId } = useParams();
@@ -45,7 +46,7 @@ export default function ChatThread() {
   return (
     <div className={styles.chatThread}>
         <ChatHeader chat={chat} />
-        <NavBar/>
+        <ChatBoard chatId={chatId} />
     </div>
   );
 }

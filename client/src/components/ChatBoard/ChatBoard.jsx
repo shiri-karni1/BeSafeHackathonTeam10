@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-import '../styles/ChatBoard.css';
 import PropTypes from 'prop-types';
-
 // Initialize socket connection to the server
 const socket = io.connect("http://localhost:3000");
+import SendIcon from '@mui/icons-material/Send';
 
 const ChatBoard = ({ roomId, currentUser }) => {
     const [messages, setMessages] = useState([]);
@@ -98,15 +97,15 @@ const ChatBoard = ({ roomId, currentUser }) => {
             </div>
 
             <div className="input-container">
-                <input 
-                    type="text" 
-                    placeholder="Type a message..."
-                    value={inputValue} 
+                <textarea 
+                    placeholder="אני חושבת ש..."
+                    value={inputValue}
+                    rows="2" 
                     onChange={(e) => setInputValue(e.target.value)} 
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 />
                 <button onClick={handleSendMessage} className="send-btn">
-                    Send
+                    <SendIcon style={{ transform: 'scaleX(-1)' }} />
                 </button>
             </div>
         </div>

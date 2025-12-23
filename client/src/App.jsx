@@ -21,9 +21,6 @@ function App() {
             <Route path="/chat/:chatId" element={<ChatThread />} />
           </Routes>
         </main>
-        <footer className={styles.footer}>
-          <p>&copy; 2024 My App</p>
-        </footer>
       </div>
     </BrowserRouter>
   );
