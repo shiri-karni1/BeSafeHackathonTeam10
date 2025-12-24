@@ -1,20 +1,55 @@
 import dotenv from 'dotenv';
-dotenv.config();
-import { init } from '@heyputer/puter.js/src/init.cjs';
+import OpenAI from 'openai';
 
-// Initialize Puter with the token from .env
-const puter = init(process.env.PUTER_TOKEN);
+dotenv.config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Define the result model (JSON Schema) for Structured Outputs
+const SAFETY_RESULT_SCHEMA = {
+  name: "safety_evaluation",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      isSafe: {
+        type: "boolean",
+        description: "Indicates if the message is safe for a teenage audience."
+      },
+      feedback: {
+        type: ["string", "null"],
+        description: "Helpful feedback for the user if the message is unsafe. Null if safe."
+      },
+      reason: {
+        type: ["string", "null"],
+        description: "The reason why the message was flagged as unsafe. Null if safe."
+      },
+      category: {
+        type: "string",
+        enum: [
+          "Bullying/Harassment",
+          "Self-Harm/Suicide",
+          "Eating Disorders",
+          "Sexual Content",
+          "PII",
+          "Medical Misinformation",
+          "Safe"
+        ],
+        description: "The category of the safety classification."
+      }
+    },
+    required: ["isSafe", "feedback", "reason", "category"],
+    additionalProperties: false
+  }
+};
 
 const SYSTEM_PROMPT = `
 You are a "Big Sister" Safety Agent for a teenage girl chat app.
 Your goal is to ensure conversations are safe, supportive, and medically accurate.
 
-Analyze the message and return a JSON object:
-{
-  "isSafe": boolean,
-  "feedback": string | null,
-  "reason": string | null
-}
+Analyze the message and return a JSON object matching the provided schema.
 
 UNSAFE CATEGORIES:
 1. Bullying/Harassment
@@ -24,55 +59,37 @@ UNSAFE CATEGORIES:
 5. PII (Phone/Address)
 6. Medical Misinformation
 
-Return ONLY the raw JSON.
-
-Examples:
-Input: "You are ugly" -> { "isSafe": false, "feedback": "Be kind.", "reason": "Bullying" }
-Input: "I'm sad" -> { "isSafe": true, "feedback": null, "reason": "Supportive" }
+If the message is safe, set isSafe to true and feedback/reason to null.
+If unsafe, provide gentle, supportive feedback.
 `;
-
-// add more examples as needed
-// fine tune the prompt for better accuracy
 
 export const evaluateMessage = async (message) => {
   try {
-    // Combine system prompt and user message for Puter
-    const fullPrompt = `${SYSTEM_PROMPT}\n\nMessage to analyze: "${message}"`;
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: message },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: SAFETY_RESULT_SCHEMA
+      },
+    });
 
-    // Call Puter AI (Free)
-    const response = await puter.ai.chat(fullPrompt);
-
-    // Check for Puter error response (e.g. missing token)
-    if (response?.code === 'token_missing' || response?.error) {
-        throw new Error("Puter AI Error: " + (response.message || "Unknown error"));
-    }
-    
-    // Puter returns a string (or object depending on version), we need to ensure it's a string first
-    let content = typeof response === 'object' ? response.message?.content || JSON.stringify(response) : response;
-
-    // TODO: verify content is a string
-
-    // Clean up potential markdown formatting (e.g. ```json ... ```)
-    if (typeof content === 'string') {
-        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-    }
-
+    const content = completion.choices[0].message.content;
     const result = JSON.parse(content);
-
-    // Validate result structure
-    if (typeof result.isSafe === 'undefined') {
-         throw new Error("Invalid AI response structure");
-    }
 
     return result;
 
   } catch (error) {
-    console.error("Error calling Puter AI:", error);
+    console.error("Error calling OpenAI:", error);
     // Block the message if the AI service fails
     return {
       isSafe: false,
       feedback: "Our safety system is currently unavailable. Your message could not be sent. Please try again later.",
-      reason: "Safety Service Error"
+      reason: "Safety Service Error",
+      category: "Error"
     };
   }
 };
