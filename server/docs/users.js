@@ -54,17 +54,17 @@
 
 /**
  * @swagger
- * /api/users/{userId}/questions:
+ * /api/users/{username}/questions:
  *   get:
- *     summary: Get all questions for a user
+ *     summary: Get all questions by a user
  *     tags: [Users]
  *     parameters:
  *       - in: path
- *         name: userId
+ *         name: username
  *         schema:
  *           type: string
  *         required: true
- *         description: The user ID
+ *         description: The username
  *     responses:
  *       200:
  *         description: List of questions
