@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/HomePage/HomePage';
 import ChatThread from './pages/ChatThread/ChatThread';
+import AddNewChat from './pages/NewChat/NewChat.jsx';
 import styles from './styles/App.module.css';
 
 import projectLogo from './assets/project-logo.png'
@@ -19,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/chat/:chatId" element={<ChatThread />} />
+            <Route path="/add-new-chat" element={<AddNewChat />} />
           </Routes>
         </main>
       </div>

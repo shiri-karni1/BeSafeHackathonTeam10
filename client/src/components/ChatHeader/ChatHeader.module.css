@@ -22,6 +22,7 @@
   flex-direction: column;
   align-items: center;
   margin-right: 15px;
+  margin-left: 15px;
 }
 .avatar {
   width: 50px;
@@ -36,7 +37,8 @@
   font-size: 1.5rem;
   margin: 0;
   align-self: start;
-  margin-top: 2%
+  margin-top: 2%;
+  direction: rtl;
 }
 .subtitle {
   font-size: 0.9rem;
@@ -45,34 +47,8 @@
   margin-right:5%;
   justify-content: center;
   color: white;
-  width: 70%
-}
-
-.participants {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: 5px;
-}
-.participantsIcon {
-  width: 16px;
-  height: 16px;
-}
-
-.participantsAndTopic {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-}
-.category {
-  font-size: 0.7rem;
-  text-align: right;
-  color: white;
-  background-color: #655454;
-  border-radius: 25px;
-  padding: 5px 10px;
+  width: 90%;
+  direction: rtl;
 }
 
 .backButton {
