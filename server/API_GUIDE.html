@@ -161,6 +161,26 @@ node testSocket.js</code></pre>
         <li><strong>Side Effect:</strong> Automatically broadcasts the message to the Socket Room.</li>
     </ul>
 
+    <h3>5. User Signup</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /users/signup</code></li>
+        <li><strong>Body:</strong> <code>{ "username": "...", "password": "..." }</code></li>
+        <li><strong>Description:</strong> Creates a new user. Returns 201 on success.</li>
+    </ul>
+
+    <h3>6. User Login</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /users/login</code></li>
+        <li><strong>Body:</strong> <code>{ "username": "...", "password": "..." }</code></li>
+        <li><strong>Description:</strong> Authenticates a user. Returns user data on success.</li>
+    </ul>
+
+    <h3>7. Get User Questions</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>GET /users/:username/questions</code></li>
+        <li><strong>Description:</strong> Returns all questions (chats) created by the user.</li>
+    </ul>
+
     <hr>
 
     <h2>🔌 Real-Time (Socket.IO)</h2>
