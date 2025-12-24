@@ -1,0 +1,87 @@
+.newChat {
+    display: flex;
+    flex-direction: column;
+    direction: rtl;
+    height: 100vh;
+}
+
+.logo {
+    width: 50px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    align-self: end;
+}
+
+.newChat h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.newChatForm {
+    width: 70%;
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.newChatForm label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #555;
+    text-align: right;
+}
+
+.newChatForm textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s;
+    text-align: right;
+}
+
+.newChatForm textarea:focus {
+    outline: none;
+    border-color: #815d76;
+}
+
+.submitButton {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #9B718F;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+}
+
+.submitButton:hover {
+    background-color: #825d78;
+}
+
+.submitButton:active {
+    transform: scale(0.98);
+}
+
+.submitButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.error {
+    padding: 0.75rem;
+    background-color: #ffebee;
+    color: #c62828;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
