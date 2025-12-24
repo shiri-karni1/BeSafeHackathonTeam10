@@ -51,10 +51,6 @@ app.use(cors({
   origin: process.env.CLIENT_URL
 }));
 
-// Routes
-app.use('/api/chats', chatRoutes);
-app.use('/api/users', userRoutes);
-
 // Initialize Socket.IO
 const io = new Server(httpServer, {
   cors: {
@@ -71,6 +67,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
+app.use('/api/chats', chatRoutes);
+app.use('/api/users', userRoutes);
+// Legacy route support (optional)
 app.use('/chats', chatRoutes);
 
 // Start server

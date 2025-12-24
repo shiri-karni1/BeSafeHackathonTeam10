@@ -40,6 +40,7 @@ router.post('/', async (req, res) => {
     if (!await handleSafetyCheck(res, combinedText, 'Chat')) return;
 
     // 2. Add to DB
+    // Throws AppError(404) if user not found
     const newChat = await dbService.createChat({ title, content, username });
     
     // (Optional) Notify main lobby that a new chat was created
@@ -49,7 +50,7 @@ router.post('/', async (req, res) => {
     res.status(201).json({ ...newChat.toObject(), isSafe: true });
   } 
   catch (error) {
-    handleError(res, error, 400);
+    handleError(res, error);
   }
 });
 
@@ -63,6 +64,7 @@ router.post('/:id/messages', async (req, res) => {
     if (!await handleSafetyCheck(res, text, 'Message')) return;
 
     // 2. Add to DB
+    // Throws AppError(404) if user not found
     const savedMessage = await dbService.addMessageToChat(id, text, username);
 
     if (!savedMessage) return sendChatNotFound(res);

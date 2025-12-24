@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import Chat from '../models/Chat.js';
+import User from '../models/User.js';
+import AppError from '../../utils/AppError.js';
 
 /**
  * Get all chats (summary only, no messages)
@@ -20,6 +22,11 @@ export const getChatById = async (id) => {
  * Create a new chat
  */
 export const createChat = async (chatData) => {
+  const user = await User.findOne({ username: chatData.username });
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
   return await Chat.create({
     ...chatData,
     messages: []
@@ -31,6 +38,12 @@ export const createChat = async (chatData) => {
  */
 export const addMessageToChat = async (chatId, text, username) => {
   if (!mongoose.Types.ObjectId.isValid(chatId)) return null;
+
+  // Check if user exists
+  const user = await User.findOne({ username });
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
   
   const chat = await Chat.findById(chatId);
   if (!chat) return null;
