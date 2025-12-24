@@ -29,7 +29,7 @@ export const createChat = async (chatData) => {
 /**
  * Add a message to a chat
  */
-export const addMessageToChat = async (chatId, text, sender) => {
+export const addMessageToChat = async (chatId, text, username) => {
   if (!mongoose.Types.ObjectId.isValid(chatId)) return null;
   
   const chat = await Chat.findById(chatId);
@@ -37,7 +37,7 @@ export const addMessageToChat = async (chatId, text, sender) => {
 
   const messageData = {
     text,
-    sender,
+    username,
     isSafe: true,
     feedback: null
   };

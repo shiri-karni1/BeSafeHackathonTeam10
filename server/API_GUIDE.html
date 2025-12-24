@@ -121,7 +121,7 @@ node testSocket.js</code></pre>
         <tbody>
             <tr><td><code>_id</code></td><td>String</td><td>Unique ID</td></tr>
             <tr><td><code>text</code></td><td>String</td><td>The message content</td></tr>
-            <tr><td><code>sender</code></td><td>String</td><td>Username of sender</td></tr>
+            <tr><td><code>username</code></td><td>String</td><td>Username of sender</td></tr>
             <tr><td><code>isSafe</code></td><td>Boolean</td><td>Result of AI Safety Check</td></tr>
             <tr><td><code>feedback</code></td><td>String</td><td>AI feedback (if unsafe or helpful tip)</td></tr>
             <tr><td><code>createdAt</code></td><td>Date</td><td>Timestamp</td></tr>
@@ -156,7 +156,7 @@ node testSocket.js</code></pre>
     <h3>4. Send Message</h3>
     <ul>
         <li><strong>Endpoint:</strong> <code>POST /chats/:id/messages</code></li>
-        <li><strong>Body:</strong> <code>{ "text": "...", "sender": "..." }</code></li>
+        <li><strong>Body:</strong> <code>{ "text": "...", "username": "..." }</code></li>
         <li><strong>Safety:</strong> Runs AI check. Returns <code>400</code> if unsafe.</li>
         <li><strong>Side Effect:</strong> Automatically broadcasts the message to the Socket Room.</li>
     </ul>

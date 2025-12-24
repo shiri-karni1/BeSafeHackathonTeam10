@@ -9,6 +9,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import connectDB from './db/config/db.js';
 import chatRoutes from './routes/chats/index.js';
+import userRoutes from './routes/users/index.js';
 import { setupSocket } from './services/socket/socket.init.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +50,10 @@ app.use('/images', express.static(path.join(__dirname, 'images'))); // Serve sta
 app.use(cors({
   origin: process.env.CLIENT_URL
 }));
+
+// Routes
+app.use('/api/chats', chatRoutes);
+app.use('/api/users', userRoutes);
 
 // Initialize Socket.IO
 const io = new Server(httpServer, {

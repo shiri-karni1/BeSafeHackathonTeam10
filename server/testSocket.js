@@ -54,16 +54,16 @@ async function runComprehensiveTest() {
 
     // Setup Listeners
     socketAlice.on("receive_message", (msg) => {
-      console.log(`\n[Alice's Screen] 📩 Received: "${msg.text}" from ${msg.sender}`);
+      console.log(`\n[Alice's Screen] 📩 Received: "${msg.text}" from ${msg.username}`);
     });
 
     socketBob.on("receive_message", (msg) => {
-      console.log(`\n[Bob's Screen]   📩 Received: "${msg.text}" from ${msg.sender}`);
+      console.log(`\n[Bob's Screen]   📩 Received: "${msg.text}" from ${msg.username}`);
     });
 
     // 4. Alice Sends a Safe Message
     console.log("\n--- Test 1: Alice sends a SAFE message ---");
-    const msg1 = { text: "Hey Bob, are you ready for the demo?", sender: "Alice" };
+    const msg1 = { text: "Hey Bob, are you ready for the demo?", username: "Alice" };
     
     await fetch(`${SERVER_URL}/chats/${roomId}/messages`, {
         method: 'POST',
@@ -76,7 +76,7 @@ async function runComprehensiveTest() {
 
     // 5. Bob Sends a Safe Reply
     console.log("\n--- Test 2: Bob sends a SAFE reply ---");
-    const msg2 = { text: "Yes Alice! I think we are ready.", sender: "Bob" };
+    const msg2 = { text: "Yes Alice! I think we are ready.", username: "Bob" };
     
     await fetch(`${SERVER_URL}/chats/${roomId}/messages`, {
         method: 'POST',
@@ -89,7 +89,7 @@ async function runComprehensiveTest() {
 
     // 6. Alice Sends an UNSAFE Message (Should be blocked)
     console.log("\n--- Test 3: Alice sends an UNSAFE message (Should be blocked) ---");
-    const msg3 = { text: "You are an idiot and I hate working with you.", sender: "Alice" };
+    const msg3 = { text: "You are an idiot and I hate working with you.", username: "Alice" };
     
     const unsafeRes = await fetch(`${SERVER_URL}/chats/${roomId}/messages`, {
         method: 'POST',
