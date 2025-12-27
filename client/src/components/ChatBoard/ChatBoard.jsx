@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
+import socketService from '../services/socketService'; // ייבוא השירות
 import '../styles/ChatBoard.css';
 import PropTypes from 'prop-types';
 
-// Initialize socket connection to the server
-const socket = io.connect("http://localhost:3000");
+
 
 const ChatBoard = ({ roomId, currentUser }) => {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const messagesEndRef = useRef(null); // Reference for auto-scrolling
+
+    const socket = socketService.getSocket();
 
     const getCurrentTime = () => {
         return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -19,7 +20,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/chats/${roomId}`);
+                const response = await fetch(`http://localhost:8080/chats/${roomId}`);
                 const data = await response.json();
                 
                 // Identify which messages belong to the current user
@@ -35,9 +36,10 @@ const ChatBoard = ({ roomId, currentUser }) => {
 
         if (roomId) {
             fetchHistory();
+            // שימוש בסוקט המשותף להצטרפות לחדר
             socket.emit("join_room", roomId);
         }
-    }, [roomId, currentUser]);
+    }, [roomId, currentUser, socket]);
 
     // Listen for incoming real-time messages
     useEffect(() => {
@@ -52,7 +54,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
 
         // Cleanup socket listener on unmount
         return () => socket.off("receive_message", handleReceiveMessage);
-    }, []);
+    }, [socket]);
 
     // Keep the chat scrolled to the bottom
     useEffect(() => {
