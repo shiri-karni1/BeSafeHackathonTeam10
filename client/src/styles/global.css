@@ -4,6 +4,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding:0;
+    background-color: #FBF8F8;
+
     }
   
   code {
@@ -22,6 +24,8 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    height: 60%;
+    padding-bottom: 80px;
   }
 
   .bubble.mine{
@@ -63,14 +67,19 @@ body {
   .input-container {
     display: flex;
     flex-direction: row-reverse;
-    align-items: center;
+    align-items: end;
     justify-content: center;
     width: 90%;
     padding: 10px;
   }
 
   .input-container textarea {
-    position: relative;
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    max-width: 700px;
     padding: 12px 60px 12px 15px; 
     border: 2px solid #ddd;
     border-radius: 25px;
@@ -81,6 +90,9 @@ body {
     display: flex;
     align-items: center;
     line-height: 1.5;
+    background-color: #FBF8F8;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 10;
   }
 
   .input-container textarea:focus {
@@ -89,6 +101,9 @@ body {
   }
 
   .input-container .send-btn {
+    position: fixed;
+    bottom: 3.5%;
+    right: calc(70%);
     background-color: #9b718f00;
     color: #9B718F;
     border: none;
@@ -99,5 +114,5 @@ body {
     align-items: center;
     justify-content: center;
     transition: background-color 0.3s;
-    margin-right: 2%;
+    z-index: 11;
   }

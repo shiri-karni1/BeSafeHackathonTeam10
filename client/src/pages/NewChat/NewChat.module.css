@@ -10,6 +10,12 @@
     height: auto;
     margin-bottom: 1.5rem;
     align-self: end;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+.logo:focus {
+    outline: none;
 }
 
 .newChat h2 {

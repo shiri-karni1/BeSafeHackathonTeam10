@@ -25,7 +25,7 @@ export default function NewChat() {
 
             // Get current user from localStorage or use "אורח"
             const currentUser = localStorage.getItem('currentUser');
-            const username = currentUser ? JSON.parse(currentUser).name : 'אורח';
+            const username = currentUser ? JSON.parse(currentUser).username : 'אורח';
 
             // Create new chat
             const response = await api.post('/chats', {
@@ -48,7 +48,7 @@ export default function NewChat() {
 
     return (
         <div className={styles.newChat}>
-            <img src={logo} alt="App Logo" className={styles.logo} />
+            <a className={styles.logo} href="/"><img src={logo} alt="App Logo" className={styles.logo} /></a>
             <h2> שאלה חדשה</h2>
             {error && <div className={styles.error}>{error}</div>}
             <form className={styles.newChatForm} onSubmit={handleSubmit}>
