@@ -10,6 +10,8 @@ const Home = () => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const chatsPerPage = 3;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +29,9 @@ const Home = () => {
         const userData = JSON.parse(currentUser);
         // Filter out chats created by current user
         const filteredChats = response.data.filter(chat => chat.username !== userData.username);
-        setChats(filteredChats);
+        // Sort by createdAt - newest first
+        const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setChats(sortedChats);
       } catch (err) {
         console.error('Error fetching chats:', err);
         setError('שגיאה בטעינת השאלות');
@@ -38,6 +42,17 @@ const Home = () => {
 
     fetchChats();
   }, [navigate]);
+
+  // Pagination calculations
+  const indexOfLastChat = currentPage * chatsPerPage;
+  const indexOfFirstChat = indexOfLastChat - chatsPerPage;
+  const currentChats = chats.slice(indexOfFirstChat, indexOfLastChat);
+  const totalPages = Math.ceil(chats.length / chatsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className={styles.home}>
@@ -51,10 +66,34 @@ const Home = () => {
       {error && <div>{error}</div>}
       
       <div className={styles.chatsContainer}>
-        {chats.map((chat) => (
+        {currentChats.map((chat) => (
           <ChatCard key={chat._id} chatId={chat._id} />
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={styles.paginationButton}
+          >
+            {'>'}
+          </button>
+          
+          <span className={styles.pageInfo}>
+            עמוד {currentPage} מתוך {totalPages}
+          </span>
+          
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={styles.paginationButton}
+          >
+            {'<'}
+          </button>
+        </div>
+      )}
       
       <button 
         className={styles.addButton}
