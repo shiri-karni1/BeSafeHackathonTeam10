@@ -1,44 +1,64 @@
-// server/services/verificationAgent/verification.service.js
-
 import { evaluateAnswerAgainstSource } from "../safetyAgent/agent.js";
-import { SEXUAL_CONSENT_SOURCE } from "../../trustedSources/sexualConsent.source.js";
+import { SEXUAL_HEALTH_SOURCES } from "../../trustedSources/sexualHealth.sources.js";
 
 /**
- * Verifies a human answer against a trusted excerpt (fail-closed).
- * Returns null if approved (like safety.service.js).
- * Returns an error object if rejected.
- *
- * @param {Object} params
- * @param {string} params.question
- * @param {string} params.answer
+ * Verifies a human answer against multiple trusted excerpts in the same topic.
+ * - Reject immediately on contradiction with any trusted source.
+ * - Approve if at least one trusted source supports the answer.
+ * - Otherwise reject as "Not Supported by Trusted Source".
  */
 export const verifyAnswer = async ({ question, answer }) => {
   console.time("VerificationCheck");
 
-  const result = await evaluateAnswerAgainstSource({
-    question,
-    answer,
-    trustedSourceText: SEXUAL_CONSENT_SOURCE.excerpt,
-  });
+  let supported = false;
+
+  for (const source of SEXUAL_HEALTH_SOURCES.sources) {
+    const result = await evaluateAnswerAgainstSource({
+      question,
+      answer,
+      trustedSourceText: source.excerpt,
+    });
+
+    // Contradiction => reject immediately
+    if (!result.approve && result.category === "Contradicts Trusted Source") {
+      console.timeEnd("VerificationCheck");
+      return buildRejection(result, source);
+    }
+
+    // If at least one source approves, mark as supported
+    if (result.approve) {
+      supported = true;
+    }
+  }
 
   console.timeEnd("VerificationCheck");
 
-  if (!result.approve) {
-    return {
-      approved: false,
-      message: "Answer rejected by Verification Agent",
-      category: result.category,
-      reason: result.reason,
-      suggestedFix: result.suggestedFix,
-      confidence: result.confidence,
-      source: {
-        name: SEXUAL_CONSENT_SOURCE.sourceName,
-        url: SEXUAL_CONSENT_SOURCE.url,
-        id: SEXUAL_CONSENT_SOURCE.id,
-      },
-    };
-  }
+  // If supported by at least one trusted excerpt -> approve
+  if (supported) return null;
 
-  // Approved
-  return null;
+  // Otherwise fail-closed
+  return buildRejection(
+    {
+      approve: false,
+      category: "Not Supported by Trusted Source",
+      reason: "The answer is not supported by any trusted source excerpt.",
+      suggestedFix: null,
+      confidence: 0.5,
+    },
+    null
+  );
 };
+
+function buildRejection(result, source) {
+  return {
+    approved: false,
+    message: "Answer rejected by Verification Agent",
+    category: result.category,
+    reason: result.reason,
+    suggestedFix: result.suggestedFix,
+    confidence: result.confidence,
+    source: source
+      ? { name: source.sourceName, url: source.url, id: source.id }
+      : null,
+  };
+}
