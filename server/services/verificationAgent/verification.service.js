@@ -2,6 +2,40 @@ import { evaluateAnswerAgainstSource } from "../safetyAgent/agent.js";
 import { SEXUAL_HEALTH_SOURCES } from "../../trustedSources/sexualHealth.sources.js";
 
 /**
+ * Turns a structured trusted source object into a single text excerpt
+ * for the LLM to compare against.
+ */
+function sourceToText(source) {
+  const summary = source.summary ? `Summary:\n${source.summary}` : "";
+
+  const keyPoints = Array.isArray(source.keyPoints) && source.keyPoints.length
+    ? `Key Points:\n${source.keyPoints.map((kp) => `- ${kp}`).join("\n")}`
+    : "";
+
+  const notes = Array.isArray(source.notes) && source.notes.length
+    ? `Notes:\n${source.notes
+        .map((n) => {
+          const name = n?.name ? `- ${n.name}` : "- (note)";
+          const why = n?.why ? `  Why: ${n.why}` : "";
+          const url = n?.url ? `  URL: ${n.url}` : "";
+          return [name, why, url].filter(Boolean).join("\n");
+        })
+        .join("\n")}`
+    : "";
+
+  return [
+    `Source Name: ${source.name ?? "Unknown"}`,
+    source.url ? `Source URL: ${source.url}` : "",
+    source.topic ? `Topic: ${source.topic}` : "",
+    summary,
+    keyPoints,
+    notes,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+/**
  * Verifies a human answer against multiple trusted excerpts in the same topic.
  * - Reject immediately on contradiction with any trusted source.
  * - Approve if at least one trusted source supports the answer.
@@ -11,12 +45,15 @@ export const verifyAnswer = async ({ question, answer }) => {
   console.time("VerificationCheck");
 
   let supported = false;
+  let supportingSource = null;
 
   for (const source of SEXUAL_HEALTH_SOURCES.sources) {
+    const trustedText = sourceToText(source);
+
     const result = await evaluateAnswerAgainstSource({
       question,
       answer,
-      trustedSourceText: source.excerpt,
+      trustedSourceText: trustedText,
     });
 
     // Contradiction => reject immediately
@@ -28,6 +65,7 @@ export const verifyAnswer = async ({ question, answer }) => {
     // If at least one source approves, mark as supported
     if (result.approve) {
       supported = true;
+      if (!supportingSource) supportingSource = source;
     }
   }
 
@@ -58,7 +96,7 @@ function buildRejection(result, source) {
     suggestedFix: result.suggestedFix,
     confidence: result.confidence,
     source: source
-      ? { name: source.sourceName, url: source.url, id: source.id }
+      ? { name: source.name, url: source.url, id: source.id }
       : null,
   };
 }
