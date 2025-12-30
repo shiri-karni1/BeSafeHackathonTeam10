@@ -26,12 +26,11 @@ const Home = () => {
       try {
         setLoading(true);
         const response = await api.get('/chats');
-        //const userData = JSON.parse(currentUser);
-        // Show all chats including my own
-        //const filteredChats = response.data;
+        const userData = JSON.parse(currentUser);
+        // Filter out chats created by current user
+        const filteredChats = response.data.filter(chat => chat.username !== userData.username);
         // Sort by createdAt - newest first
-        //const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        const sortedChats = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setChats(sortedChats);
       } catch (err) {
         console.error('Error fetching chats:', err);
