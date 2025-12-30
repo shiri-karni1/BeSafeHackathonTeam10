@@ -7,9 +7,10 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import connectDB from './config/db.js';
-import chatRoutes from './routes/chats.js';
-import { setupSocket } from './socket/socketHandler.js';
+import connectDB from './db/config/db.js';
+import chatRoutes from './routes/chats/index.js';
+import userRoutes from './routes/users/index.js';
+import { setupSocket } from './services/socket/socket.init.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,7 +67,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
 app.use('/chats', chatRoutes);
+app.use('/users', userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

@@ -1,0 +1,74 @@
+.chatCard {
+    cursor: pointer;
+    padding: 20px;
+    border: none;
+    margin-bottom: 15px;
+    background-color: #F2D3D2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    color: rgb(49, 46, 46);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.chatCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.chatCard h4 {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: rgb(49, 46, 46);
+    line-height: 1.4;
+    text-align: right;
+}
+
+.chatInfo {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(49, 46, 46, 0.1);
+    font-size: 0.85em;
+    color: rgba(49, 46, 46, 0.7);
+}
+
+.chatInfo p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.content {
+    margin-top: 10px;
+    font-size: 1em;
+    text-align: right;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .chatCard {
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+    }
+
+    .chatCard h4 {
+        font-size: 1em;
+    }
+
+    .chatInfo {
+        font-size: 0.8em;
+        margin-top: 10px;
+        padding-top: 10px;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}

@@ -5,17 +5,18 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev": "node -e \"require('fs').mkdirSync('.mongo_data', {recursive: true})\" && concurrently -n \"DB,SERVER\" -c \"bgBlue,bgMagenta\" --hide \"DB\" \"mongod --dbpath .mongo_data\" \"nodemon server\"",
+    "dev": "nodemon server",
     "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@heyputer/puter.js": "^2.2.2",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2",
     "node-fetch": "^3.3.2",
     "openai": "^6.14.0",

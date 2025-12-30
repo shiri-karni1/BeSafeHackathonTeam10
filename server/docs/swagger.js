@@ -11,7 +11,7 @@
  *         text:
  *           type: string
  *           description: The message content
- *         sender:
+ *         username:
  *           type: string
  *           description: The username of the sender
  *         timestamp:
@@ -157,11 +157,11 @@
  *             type: object
  *             required:
  *               - text
- *               - sender
+ *               - username
  *             properties:
  *               text:
  *                 type: string
- *               sender:
+ *               username:
  *                 type: string
  *     responses:
  *       201:

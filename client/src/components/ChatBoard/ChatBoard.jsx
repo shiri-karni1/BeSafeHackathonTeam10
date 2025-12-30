@@ -100,15 +100,15 @@ const ChatBoard = ({ roomId, currentUser }) => {
             </div>
 
             <div className="input-container">
-                <input 
-                    type="text" 
-                    placeholder="Type a message..."
-                    value={inputValue} 
+                <textarea 
+                    placeholder="אני חושבת ש..."
+                    value={inputValue}
+                    rows="2" 
                     onChange={(e) => setInputValue(e.target.value)} 
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 />
                 <button onClick={handleSendMessage} className="send-btn">
-                    Send
+                    <SendIcon style={{ transform: 'scaleX(-1)' }} />
                 </button>
             </div>
         </div>

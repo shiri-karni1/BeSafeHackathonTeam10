@@ -63,12 +63,6 @@
     <p>Before running the project, every team member needs to install:</p>
     <ol>
 
-        <li><strong>MongoDB Community Server:</strong> <a href="https://www.mongodb.com/try/download/community">Download Here</a>
-            <ul>
-                <li><em>Why?</em> This gives you the <code>mongod</code> command needed to run the database locally.</li>
-                <li><strong>Mac Users:</strong> You can also install via Homebrew: <code>brew tap mongodb/brew && brew install mongodb-community</code></li>
-            </ul>
-        </li>
         <li><strong>MongoDB Compass:</strong> <a href="https://www.mongodb.com/try/download/compass">Download Here</a> (The GUI to see the data)</li>
     </ol>
 
@@ -81,13 +75,13 @@ npm install</code></pre>
         <li><strong>Start the Server</strong> (Runs Database + API + Socket):
             <pre><code>cd server
 npm run dev</code></pre>
-            <p><em>Server runs on:</em> <code>http://localhost:5000</code><br>
-            <em>Swagger Docs:</em> <code>http://localhost:5000/api-docs</code></p>
+            <p><em>Server runs on:</em> <code>http://localhost:8080</code><br>
+            <em>Swagger Docs:</em> <code>http://localhost:8080/api-docs</code></p>
         </li>
         <li><strong>Connect MongoDB Compass:</strong>
             <ul>
                 <li>Open Compass.</li>
-                <li>Paste this connection string: <code>mongodb://localhost:27017</code></li>
+                <li>Paste the Atlas connection string from your <code>.env</code> file.</li>
                 <li>Click <strong>Connect</strong>.</li>
                 <li>You will see a database named <code>besafe_hackathon</code> (once you create the first chat).</li>
             </ul>
@@ -127,7 +121,7 @@ node testSocket.js</code></pre>
         <tbody>
             <tr><td><code>_id</code></td><td>String</td><td>Unique ID</td></tr>
             <tr><td><code>text</code></td><td>String</td><td>The message content</td></tr>
-            <tr><td><code>sender</code></td><td>String</td><td>Username of sender</td></tr>
+            <tr><td><code>username</code></td><td>String</td><td>Username of sender</td></tr>
             <tr><td><code>isSafe</code></td><td>Boolean</td><td>Result of AI Safety Check</td></tr>
             <tr><td><code>feedback</code></td><td>String</td><td>AI feedback (if unsafe or helpful tip)</td></tr>
             <tr><td><code>createdAt</code></td><td>Date</td><td>Timestamp</td></tr>
@@ -162,9 +156,29 @@ node testSocket.js</code></pre>
     <h3>4. Send Message</h3>
     <ul>
         <li><strong>Endpoint:</strong> <code>POST /chats/:id/messages</code></li>
-        <li><strong>Body:</strong> <code>{ "text": "...", "sender": "..." }</code></li>
+        <li><strong>Body:</strong> <code>{ "text": "...", "username": "..." }</code></li>
         <li><strong>Safety:</strong> Runs AI check. Returns <code>400</code> if unsafe.</li>
         <li><strong>Side Effect:</strong> Automatically broadcasts the message to the Socket Room.</li>
+    </ul>
+
+    <h3>5. User Signup</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /users/signup</code></li>
+        <li><strong>Body:</strong> <code>{ "username": "...", "password": "..." }</code></li>
+        <li><strong>Description:</strong> Creates a new user. Returns 201 on success.</li>
+    </ul>
+
+    <h3>6. User Login</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>POST /users/login</code></li>
+        <li><strong>Body:</strong> <code>{ "username": "...", "password": "..." }</code></li>
+        <li><strong>Description:</strong> Authenticates a user. Returns user data on success.</li>
+    </ul>
+
+    <h3>7. Get User Questions</h3>
+    <ul>
+        <li><strong>Endpoint:</strong> <code>GET /users/:username/questions</code></li>
+        <li><strong>Description:</strong> Returns all questions (chats) created by the user.</li>
     </ul>
 
     <hr>
@@ -174,7 +188,7 @@ node testSocket.js</code></pre>
 
     <h3>How to Connect (Frontend)</h3>
     <pre><code>import io from 'socket.io-client';
-const socket = io('http://localhost:5000');</code></pre>
+const socket = io('http://localhost:8080');</code></pre>
 
     <h3>Events</h3>
 
@@ -194,9 +208,9 @@ socket.emit('join_room', "123");</code></pre>
 
     <h2>🛡️ AI Safety System</h2>
     <ul>
-        <li><strong>Engine:</strong> Puter.js (AI Agent)</li>
+        <li><strong>Engine:</strong> OpenAI (GPT-4o-mini)</li>
         <li><strong>Behavior:</strong> Every <code>POST</code> request is analyzed.</li>
-        <li><strong>Latency:</strong> ~5-7 seconds per message.</li>
+        <li><strong>Latency:</strong> ~1-2 seconds per message.</li>
         <li><strong>Frontend Tip:</strong> Use "Optimistic UI" (show message immediately as "sending...") so the user doesn't feel the delay.</li>
     </ul>
 </body>
