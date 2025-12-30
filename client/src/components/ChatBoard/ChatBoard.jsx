@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import socketService from '../services/socketService'; // ייבוא השירות
-import '../styles/ChatBoard.css';
+import socketService from '../SocketFactory/SocketFactory';
 import PropTypes from 'prop-types';
 import SendIcon from '@mui/icons-material/Send';
 
