@@ -1,6 +1,6 @@
 import styles from './Home.module.css';
 import logo from '../../assets/logo.png';
-import {ChatCard} from '../../components/ChatCard/ChatCard.jsx';
+import { ChatCard } from '../../components/ChatCard/ChatCard.jsx';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api.js';
@@ -11,7 +11,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const chatsPerPage = 3;
+  const chatsPerPage = 6;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,11 +26,12 @@ const Home = () => {
       try {
         setLoading(true);
         const response = await api.get('/chats');
-        const userData = JSON.parse(currentUser);
-        // Filter out chats created by current user
-        const filteredChats = response.data.filter(chat => chat.username !== userData.username);
+        //const userData = JSON.parse(currentUser);
+        // Show all chats including my own
+        //const filteredChats = response.data;
         // Sort by createdAt - newest first
-        const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        //const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const sortedChats = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setChats(sortedChats);
       } catch (err) {
         console.error('Error fetching chats:', err);
@@ -61,10 +62,10 @@ const Home = () => {
         <a className={styles.logo} href="/"><img src={logo} alt="App Logo" className={styles.logo} /></a>
       </div>
       <h2> אולי את תדעי לייעץ כאן? </h2>
-      
+
       {loading && <div>טוען...</div>}
       {error && <div>{error}</div>}
-      
+
       <div className={styles.chatsContainer}>
         {currentChats.map((chat) => (
           <ChatCard key={chat._id} chatId={chat._id} />
@@ -73,19 +74,19 @@ const Home = () => {
 
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          <button 
+          <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className={styles.paginationButton}
           >
             {'>'}
           </button>
-          
+
           <span className={styles.pageInfo}>
             עמוד {currentPage} מתוך {totalPages}
           </span>
-          
-          <button 
+
+          <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className={styles.paginationButton}
@@ -94,8 +95,8 @@ const Home = () => {
           </button>
         </div>
       )}
-      
-      <button 
+
+      <button
         className={styles.addButton}
         onClick={() => navigate('/add-new-chat')}
       >
