@@ -1,7 +1,7 @@
 import { evaluateAnswerAgainstSource } from "../safetyAgent/agent.js";
-import { SEXUAL_HEALTH_SOURCES } from "../../trustedSources/sexualHealth.sources.js";
-import { NUTRITION_AND_BODY_IMAGE_SOURCES } from "../../trustedSources/nutritionAndBodyImage.sources.js";
-import { PEER_PRESSURE_AND_SOCIAL_LIFE_SOURCES } from "../../trustedSources/peerPressureAndSocialLife.sources.js";
+import { SEXUAL_HEALTH_SOURCES } from "../../utils/trustedSources/sexualHealth.sources.js";
+import { NUTRITION_AND_BODY_IMAGE_SOURCES } from "../../utils/trustedSources/nutritionAndBodyImage.sources.js";
+import { PEER_PRESSURE_AND_SOCIAL_LIFE_SOURCES } from "../../utils/trustedSources/peerPressureAndSocialLife.sources.js";
 
 /**
  * Turns a structured trusted source object into a single text excerpt
@@ -18,13 +18,13 @@ function sourceToText(source) {
   const notes =
     Array.isArray(source.notes) && source.notes.length
       ? `Notes:\n${source.notes
-          .map((n) => {
-            const name = n?.name ? `- ${n.name}` : "- (note)";
-            const why = n?.why ? `  Why: ${n.why}` : "";
-            const url = n?.url ? `  URL: ${n.url}` : "";
-            return [name, why, url].filter(Boolean).join("\n");
-          })
-          .join("\n")}`
+        .map((n) => {
+          const name = n?.name ? `- ${n.name}` : "- (note)";
+          const why = n?.why ? `  Why: ${n.why}` : "";
+          const url = n?.url ? `  URL: ${n.url}` : "";
+          return [name, why, url].filter(Boolean).join("\n");
+        })
+        .join("\n")}`
       : "";
 
   return [
@@ -104,10 +104,10 @@ function buildRejection(result, source) {
     confidence: result.confidence,
     source: source
       ? {
-          name: source.name ?? source.sourceName ?? null,
-          url: source.url,
-          id: source.id,
-        }
+        name: source.name ?? source.sourceName ?? null,
+        url: source.url,
+        id: source.id,
+      }
       : null,
   };
 }
