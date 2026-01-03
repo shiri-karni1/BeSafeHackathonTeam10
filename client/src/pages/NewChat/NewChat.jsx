@@ -23,9 +23,9 @@ export default function NewChat() {
             setLoading(true);
             setError(null);
 
-            // Get current user from localStorage or use "אורח"
+            // Get current user from localStorage
             const currentUser = localStorage.getItem('currentUser');
-            const username = currentUser ? JSON.parse(currentUser).username : 'אורח';
+            const username = currentUser;
 
             // Create new chat
             const response = await api.post('/chats', {
