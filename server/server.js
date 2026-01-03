@@ -68,10 +68,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/chats', chatRoutes);
-app.use('/api/users', userRoutes);
-// Legacy route support (optional)
 app.use('/chats', chatRoutes);
+app.use('/users', userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

@@ -48,7 +48,7 @@ export default function NewChat() {
 
     return (
         <div className={styles.newChat}>
-            <img src={logo} alt="App Logo" className={styles.logo} />
+            <a className={styles.logo} href="/"><img src={logo} alt="App Logo" className={styles.logo} /></a>
             <h2> שאלה חדשה</h2>
             {error && <div className={styles.error}>{error}</div>}
             <form className={styles.newChatForm} onSubmit={handleSubmit}>
