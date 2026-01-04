@@ -24,8 +24,13 @@ export default function NewChat() {
             setError(null);
 
             // Get current user from localStorage
-            const currentUser = localStorage.getItem('currentUser');
-            const username = currentUser;
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const username = currentUser?.username;
+            if (!username) {
+                setError('משתמש לא מחובר');
+                setLoading(false);
+                return;
+            }
 
             // Create new chat
             const response = await api.post('/chats', {
