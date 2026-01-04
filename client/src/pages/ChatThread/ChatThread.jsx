@@ -5,12 +5,14 @@ import styles from "./ChatThread.module.css";
 import api from '../../services/api.js';
 import ChatBoard from '../../components/ChatBoard/ChatBoard.jsx';
 
-
 export default function ChatThread() {
   const { chatId } = useParams();
   const [chat, setChat] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  const currentUserName = currentUser?.username || "אורח";
 
   useEffect(() => {
     const fetchChat = async () => {
@@ -45,8 +47,11 @@ export default function ChatThread() {
 
   return (
     <div className={styles.chatThread}>
-        <ChatHeader chat={chat} />
-        <ChatBoard chatId={chatId} />
+      <ChatHeader chat={chat} />
+      <ChatBoard
+        roomId={chatId}
+        currentUser={{ name: currentUserName }}
+      />
     </div>
   );
 }

@@ -3,133 +3,141 @@ import socketService from '../SocketFactory/SocketFactory';
 import PropTypes from 'prop-types';
 import SendIcon from '@mui/icons-material/Send';
 
+const formatTime = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+};
+
 const ChatBoard = ({ roomId, currentUser }) => {
-    const [messages, setMessages] = useState([]);
-    const [inputValue, setInputValue] = useState("");
-    const messagesEndRef = useRef(null); // Reference for auto-scrolling
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const messagesEndRef = useRef(null);
 
-    const socket = socketService.getSocket();
+  const socket = socketService.getSocket();
 
-    const getCurrentTime = () => {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/chats/${roomId}`);
+        const data = await response.json();
+
+        const msgs = data?.messages || [];
+        const history = msgs.map(msg => ({
+          ...msg,
+          isMine: (msg.sender || msg.username) === currentUser?.name
+        }));
+
+        setMessages(history);
+      } catch (error) {
+        console.error("Failed to load history from DB:", error);
+      }
     };
 
-    // Join room and fetch existing message history from MongoDB
-    useEffect(() => {
-        const fetchHistory = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/chats/${roomId}`);
-                const data = await response.json();
+    if (!roomId) return;
 
-                const msgs = data?.messages || [];
-                const history = msgs.map(msg => ({
-                    ...msg,
-                    isMine: (msg.sender || msg.username) === currentUser?.name
-                }));
+    fetchHistory();
+    socket.emit("join_room", roomId);
+  }, [roomId, currentUser, socket]);
 
-                setMessages(history);
-            } catch (error) {
-                console.error("Failed to load history from DB:", error);
+  useEffect(() => {
+    const handleReceiveMessage = (data) => {
+      setMessages((prev) => {
+        if (data?._id && prev.some((m) => m._id === data._id)) return prev;
+
+        return [
+          ...prev,
+          { ...data, isMine: (data.sender || data.username) === currentUser?.name }
+        ];
+      });
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+    return () => socket.off("receive_message", handleReceiveMessage);
+  }, [socket, currentUser]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    const textToSend = inputValue.trim();
+    if (textToSend === "") return;
+
+    try {
+      const res = await fetch(`http://localhost:8080/chats/${roomId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: textToSend,
+          username: currentUser?.name || "Guest",
+        }),
+      });
+
+      const body = await res.json().catch(() => ({}));
+      console.log("save message status:", res.status, body);
+
+      if (!res.ok || body?.isSafe === false || body?.blocked) {
+        alert(body?.message || body?.reason || "ההודעה נחסמה או לא נשמרה");
+        return;
+      }
+
+      setMessages((prev) => {
+         if (body?._id && prev.some((m) => m._id === body._id)) return prev;
+         return [...prev, { ...body, isMine: true }];
+    });
+
+
+      setInputValue("");
+    } catch (err) {
+      console.error("save message network error:", err);
+      alert("בעיה ברשת — ההודעה לא נשמרה");
+    }
+  };
+
+  return (
+    <div className="chat-board">
+      <div className="messages-display">
+        {messages.map((msg, index) => (
+          <div
+            key={msg._id || msg.id || index}
+            className={`bubble ${msg.isMine ? 'mine' : 'theirs'}`}
+          >
+            {!msg.isMine && <div className="msg-sender">{msg.sender || msg.username}</div>}
+            <div className="msg-text">{msg.text}</div>
+            <div className="msg-time">{formatTime(msg.createdAt)}</div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="input-container">
+        <textarea
+          placeholder="אני חושבת ש..."
+          value={inputValue}
+          rows="2"
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
             }
-        };
-
-        if (!roomId) return;
-
-        fetchHistory();
-        // שימוש בסוקט המשותף להצטרפות לחדר
-        socket.emit("join_room", roomId);
-    }, [roomId, currentUser, socket]);
-
-    // Listen for incoming real-time messages
-    useEffect(() => {
-        const handleReceiveMessage = (data) => {
-            if (data?.senderId === socket.id) return;
-
-            setMessages((prev) => [
-                ...prev,
-                { ...data, isMine: (data.sender || data.username) === currentUser?.name }
-            ]);
-        };
-
-        socket.on("receive_message", handleReceiveMessage);
-
-        // Cleanup socket listener on unmount
-        return () => socket.off("receive_message", handleReceiveMessage);
-    }, [socket, currentUser]);
-
-    // Keep the chat scrolled to the bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
-
-    const handleSendMessage = () => {
-        const textToSend = inputValue.trim();
-        if (textToSend === "") return;
-
-        const messageData = {
-            id: Date.now(), // Temporary key for React rendering
-            room: roomId,
-            sender: currentUser?.name || "Guest",
-            senderId: socket.id,
-            text: textToSend,
-            time: getCurrentTime(),
-        };
-
-        // Broadcast message to server (Server handles MongoDB persistence)
-        socket.emit("send_message", messageData);
-
-        fetch(`http://localhost:8080/chats/${roomId}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                text: textToSend,
-                username: currentUser?.name || "Guest"
-            }),
-        }).catch(() => {});
-
-        // Optimistic UI update for immediate feedback
-        setMessages((prev) => [...prev, { ...messageData, isMine: true }]);
-
-        setInputValue("");
-    };
-
-    return (
-        <div className="chat-board">
-            <div className="messages-display">
-                {messages.map((msg, index) => (
-                    <div
-                        key={msg._id || msg.id || index}
-                        className={`bubble ${msg.isMine ? 'mine' : 'theirs'}`}
-                    >
-                        {!msg.isMine && <div className="msg-sender">{msg.sender || msg.username}</div>}
-                        <div className="msg-text">{msg.text}</div>
-                        <div className="msg-time">{msg.time}</div>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <div className="input-container">
-                <textarea
-                    placeholder="אני חושבת ש..."
-                    value={inputValue}
-                    rows="2"
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
-                <button onClick={handleSendMessage} className="send-btn">
-                    <SendIcon style={{ transform: 'scaleX(-1)' }} />
-                </button>
-            </div>
-        </div>
-    );
+          }}
+        />
+        <button onClick={handleSendMessage} className="send-btn">
+          <SendIcon style={{ transform: 'scaleX(-1)' }} />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 ChatBoard.propTypes = {
-    roomId: PropTypes.string.isRequired,
-    currentUser: PropTypes.shape({
-        name: PropTypes.string
-    })
+  roomId: PropTypes.string.isRequired,
+  currentUser: PropTypes.shape({
+    name: PropTypes.string
+  })
 };
 
 export default ChatBoard;
