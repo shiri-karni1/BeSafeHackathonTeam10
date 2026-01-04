@@ -7,7 +7,9 @@
   display: flex;
   flex-direction: column;
   font-family: "Varela Round", sans-serif;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .headerTitleAndProfile {
