@@ -35,7 +35,7 @@ const SAFETY_RESULT_SCHEMA = {
           "PII",
           "Medical Misinformation",
           "Safe",
-          "Error" // ✅ IMPORTANT: add this because you return "Error" on failures
+          "Error", // ✅ IMPORTANT: add this because you return "Error" on failures
         ],
       },
     },
@@ -105,18 +105,22 @@ export const evaluateMessage = async (message) => {
 
 /**
  * =========================================================
- * 2) ANSWER VERIFICATION (NEW)
+ * 2) ANSWER VERIFICATION (UPDATED: adds WARN categories)
  * =========================================================
  * Purpose:
- * Approve/reject human answers based on a trusted source excerpt.
+ * Compare a human answer against a trusted source excerpt.
  *
- * IMPORTANT:
- * - This does NOT “add a warning label”.
- * - It decides: approve=true/false.
- * - Later you can plug in a real website retrieval step.
+ * IMPORTANT (updated behavior):
+ * - The trusted source excerpt may be irrelevant to the question/answer.
+ * - If it is irrelevant, the agent must NOT claim contradiction.
+ * - We return isRelevant so the caller can ignore irrelevant sources.
+ *
+ * ALSO:
+ * - The agent can emit WARNING categories when content is allowed but risky.
+ * - For WARNING categories: approve=true (publish) + category set to warning type.
  */
 
-// JSON Schema for verification
+// JSON Schema for verification (UPDATED: adds isRelevant + warning categories)
 const VERIFICATION_SCHEMA = {
   name: "answer_verification",
   strict: true,
@@ -124,55 +128,139 @@ const VERIFICATION_SCHEMA = {
     type: "object",
     additionalProperties: false,
     properties: {
+      isRelevant: {
+        type: "boolean",
+        description:
+          "Whether the trusted source excerpt is relevant to the question/answer topic.",
+      },
       approve: {
         type: "boolean",
-        description: "Whether the answer is approved for publishing."
+        description:
+          "Whether the answer should be allowed for publishing (true can include WARN).",
       },
       category: {
         type: "string",
         enum: [
+          // ✅ core verification outcomes
           "Accurate",
           "Contradicts Trusted Source",
           "Not Supported by Trusted Source",
           "Potentially Harmful Medical Advice",
           "Unclear",
-          "Error"
-        ]
+          "Error",
+
+          // ⚠️ WARN categories (publish with warning)
+          "Age Gap / Power Imbalance",
+          "Potential Grooming Risk",
+          "Risky Relationship Dynamics",
+          "Authority Figure Involved",
+          "Emotional Manipulation Risk",
+          "Unequal Emotional Maturity",
+          "Dependency Risk",
+          "Boundary Concerns",
+          "Pressure to Move Too Fast",
+          "Isolation From Friends or Family",
+
+          "Peer Pressure Risk",
+          "Risky Social Situation",
+          "Substance Pressure",
+          "Party Safety Concern",
+          "Loss of Control Risk",
+          "Encouraging Risky Behavior",
+          "Normalization of Harmful Behavior",
+
+          "Consent Gray Area",
+          "Ambiguous Consent Situation",
+          "Pressure Around Sexual Activity",
+          "Readiness Unclear",
+          "Emotional Safety Concern",
+          "Intimacy Pressure",
+          "Lack of Informed Consent",
+
+          "Unhealthy Body Image Messaging",
+          "Diet Culture Risk",
+          "Weight Fixation Concern",
+          "Food Restriction Warning",
+          "Appearance Pressure",
+          "Comparison Pressure",
+          "Self-Esteem Risk",
+
+          "Emotional Vulnerability",
+          "Distress Signals",
+          "Lack of Support System",
+          "Normalization of Emotional Pain",
+          "Avoidance of Help-Seeking",
+          "Unhealthy Coping Strategy",
+
+          "Impulsive Decision Making",
+          "Long-Term Consequences Unclear",
+          "Lack of Adult Guidance",
+          "Overconfidence Risk",
+          "Life Experience Gap",
+
+          "Potential Harm – Context Dependent",
+          "Situational Risk",
+          "Requires Careful Consideration",
+          "Sensitive Topic – Caution Advised",
+          "Complex Situation",
+        ],
       },
       reason: { type: ["string", "null"] },
       suggestedFix: {
         type: ["string", "null"],
-        description: "Optional: a safer rewrite (if you want). If you don't want rewrites, keep it null."
+        description:
+          "Optional: a safer rewrite. Keep it short and teen-appropriate.",
       },
-      confidence: { type: "number", minimum: 0, maximum: 1 }
+      confidence: { type: "number", minimum: 0, maximum: 1 },
     },
-    required: ["approve", "category", "reason", "suggestedFix", "confidence"]
-  }
+    required: ["isRelevant", "approve", "category", "reason", "suggestedFix", "confidence"],
+  },
 };
 
 const VERIFICATION_SYSTEM_PROMPT = `
 You are an Answer Verification Agent for a teen forum.
 
 The forum answers are written by PEOPLE.
-Your job is to verify an answer against a TRUSTED SOURCE excerpt.
+Your job is to verify an answer against a TRUSTED SOURCE excerpt AND mark risk when appropriate.
 
-Rules:
-- Approve ONLY if the answer is supported by the trusted source.
-- If the answer contradicts the source, reject it.
-- If the answer gives medical advice that could be harmful or tells to stop meds etc., reject it.
-- If the trusted source does not cover the claim, reject as "Not Supported by Trusted Source".
-- Be strict: if unsure, do not approve.
+CRITICAL STEP 1: Relevance
+- First decide whether the trusted source excerpt is relevant to the question/answer topic.
+- If the excerpt is NOT relevant:
+  - set isRelevant=false
+  - set category="Unclear"
+  - DO NOT claim "Contradicts Trusted Source"
+  - approve should usually be false (cannot verify), but never invent contradictions.
+
+If the excerpt IS relevant (isRelevant=true), then apply:
+
+A) BLOCK outcomes (do NOT publish):
+- If the answer clearly contradicts the excerpt: approve=false, category="Contradicts Trusted Source".
+- If the answer gives medical advice that could be harmful (e.g., tells to stop meds, extreme restriction, unsafe actions): approve=false, category="Potentially Harmful Medical Advice".
+
+B) APPROVE outcomes (publish normally):
+- If the answer is clearly supported by the excerpt: approve=true, category="Accurate".
+- If the excerpt does not cover the claim, AND there is no safety concern: do NOT block. Use:
+  - approve=true, category="Not Supported by Trusted Source"
+  (This means: allowed to publish, but not verified by sources.)
+
+C) WARN outcomes (publish WITH warning):
+If the answer is allowed but includes a red-flag / risk pattern for teens, set approve=true AND choose ONE warning category from the WARN list:
+Examples of WARN triggers:
+- Large age gaps or power imbalance, authority figures, manipulation, isolation.
+- Peer pressure, risky parties, substance pressure.
+- Consent ambiguity or pressure (without explicit illegal content).
+- Body image / dieting messaging that may be unhealthy but not explicitly disordered.
+- Emotional vulnerability or unhealthy coping.
+Return a short reason explaining the risk and a suggestedFix that rewrites the answer to be safer.
+
+Be strict about contradictions and harmful medical advice.
+But do NOT fabricate contradiction for irrelevant excerpts.
 
 Return JSON only.
 `.trim();
 
 /**
  * Verify a human answer against a trusted source excerpt.
- *
- * @param {Object} params
- * @param {string} params.question - original question in the forum
- * @param {string} params.answer - human answer to verify
- * @param {string} params.trustedSourceText - relevant excerpt from your trusted website/source
  */
 export const evaluateAnswerAgainstSource = async ({
   question,
@@ -186,8 +274,8 @@ export const evaluateAnswerAgainstSource = async ({
       typeof trustedSourceText !== "string" ||
       trustedSourceText.trim().length === 0
     ) {
-      // If you have no source text, you cannot verify -> reject
       return {
+        isRelevant: false,
         approve: false,
         category: "Unclear",
         reason: "Missing answer or trusted source excerpt for verification.",
@@ -207,7 +295,9 @@ Trusted source excerpt:
 ${trustedSourceText}
 
 Task:
-Decide if the human answer is supported by the trusted source excerpt.
+1) Decide if the trusted source excerpt is relevant to the question/answer topic.
+2) If relevant, decide if the answer contradicts/supports/is not covered.
+3) If allowed but risky for teens, choose a WARN category and set approve=true.
 `.trim();
 
     const completion = await openai.chat.completions.create({
@@ -224,8 +314,8 @@ Decide if the human answer is supported by the trusted source excerpt.
     return JSON.parse(content);
   } catch (error) {
     console.error("Error calling OpenAI (verification):", error);
-    // Fail-closed: if verification fails, do not approve content
     return {
+      isRelevant: false,
       approve: false,
       category: "Error",
       reason: "Verification service error",
