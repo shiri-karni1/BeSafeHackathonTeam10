@@ -1,4 +1,12 @@
 // testWarnings.js
+
+// Skip in CI (GitHub Actions) and when no API key is available
+if (process.env.CI === "true" || !process.env.OPENAI_API_KEY) {
+  console.log("Skipping testWarnings.js (CI or missing OPENAI_API_KEY).");
+  process.exit(0);
+}
+
+// testWarnings.js
 import { verifyAnswer } from "./services/verificationAgent/verification.service.js";
 
 function printResult(title, res) {
