@@ -2,6 +2,11 @@
 .app {
   text-align: center;
   background-color: #FBF8F8;
+  height: 100vh;
+}
+
+.main {
+  height: 100%;
 }
 
 
