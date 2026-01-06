@@ -1,10 +1,33 @@
+/* עוטף את textarea והחץ */
+.input-box {
+  position: relative;
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 768px) {
+
+
+  .messages-display {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+  .input-container {
+    background: transparent;
+  }
+}
+html, body, #root, .app, .chat-board {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
 body {
-    margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding: 0;
     background-color: #FBF8F8;
 }
 
@@ -16,17 +39,17 @@ code {
     padding: 2%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-}
+    height: 100vh;
+    overflow: hidden;
+  }
 
 .messages-display {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     overflow-y: auto;
-    height: 60%;
     padding-bottom: 80px;
-}
+  }
 
 /* ===== MESSAGE BUBBLES ===== */
 
@@ -108,18 +131,22 @@ code {
 
 .input-container {
     display: flex;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 8px 10px 8px;
+    background: transparent;
     flex-direction: row-reverse;
-    align-items: end;
     justify-content: center;
-    width: 90%;
-    padding: 10px;
+
 }
 
 .input-container textarea {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     width: 50%;
     max-width: 700px;
     padding: 12px 60px 12px 15px;
@@ -129,13 +156,13 @@ code {
     font-family: inherit;
     font-size: 14px;
     direction: rtl;
-    display: flex;
-    align-items: center;
     line-height: 1.5;
     background-color: #FBF8F8;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 10;
-}
+    position: relative;
+    z-index: 1000;
+  
+  }
 
 .input-container textarea:focus {
     outline: none;
@@ -143,9 +170,6 @@ code {
 }
 
 .input-container .send-btn {
-    position: fixed;
-    bottom: 3.5%;
-    right: calc(70%);
     background-color: #9b718f00;
     color: #9B718F;
     border: none;
@@ -156,7 +180,11 @@ code {
     align-items: center;
     justify-content: center;
     transition: background-color 0.3s;
-    z-index: 11;
+    position: absolute;
+    left: 18%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
 }
 /* ===== TOAST (אדום/צהוב) מעל תיבת הטקסט ===== */
 

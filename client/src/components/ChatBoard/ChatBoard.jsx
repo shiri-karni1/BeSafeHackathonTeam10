@@ -244,21 +244,23 @@ const ChatBoard = ({ roomId, currentUser }) => {
     )}
 
     <div className="input-container">
-      <textarea
-        placeholder="אני חושבת ש..."
-        value={inputValue}
-        rows="2"
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-          }
-        }}
-      />
-      <button onClick={handleSendMessage} className="send-btn">
-        <SendIcon style={{ transform: "scaleX(-1)" }} />
-      </button>
+      <div className="input-box">
+        <textarea
+          placeholder="אני חושבת ש..."
+          value={inputValue}
+          rows="2"
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+        />
+        <button onClick={handleSendMessage} className="send-btn">
+          <SendIcon style={{ transform: "scaleX(-1)" }} />
+        </button>
+      </div>
     </div>
   </div>
 );
