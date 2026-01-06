@@ -48,7 +48,7 @@ router.post("/", async (req, res) => {
     res.status(201).json({
       ...newChat.toObject(),
       isSafe: true,
-      warning: check.warning, // null or {category, reason, suggestedFix}
+      warning: check.warning, // null or {...}
     });
   } catch (error) {
     handleError(res, error);
@@ -69,15 +69,17 @@ router.post("/:id/messages", async (req, res) => {
     const savedMessage = await dbService.addMessageToChat(id, text, username);
     if (!savedMessage) return sendChatNotFound(res);
 
-    // 3) Socket Call
-    socketService.notifyChatRoom(req.io, id, "receive_message", savedMessage);
-
-    // 4) Respond with saved message (+ optional warning)
-    // (אם savedMessage הוא mongoose doc, אפשר גם savedMessage.toObject())
-    res.status(201).json({
+    // 3) Build payload with warning so EVERYONE (socket + sender) gets it
+    const payload = {
       ...(savedMessage.toObject ? savedMessage.toObject() : savedMessage),
-      warning: check.warning,
-    });
+      warning: check.warning, // 🟡 null if no warning
+    };
+
+    // 4) Socket Call (send payload, not savedMessage)
+    socketService.notifyChatRoom(req.io, id, "receive_message", payload);
+
+    // 5) Respond with the same payload
+    res.status(201).json(payload);
   } catch (error) {
     handleError(res, error);
   }
