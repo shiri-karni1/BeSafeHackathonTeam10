@@ -1,6 +1,7 @@
 import express from 'express';
 import * as userCrud from '../../db/crud/user.crud.js';
 import { formatUserResponse, handleAuthError } from './helpers.js';
+import { verifyToken } from '../../services/auth/auth.middleware.js';
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.post('/signup', async (req, res) => {
     });
 
     if (user) {
-      res.status(201).json(formatUserResponse(user));
+      res.status(201).json(formatUserResponse(user, res));
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
@@ -32,13 +33,13 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     // loginUser throws if credentials are invalid or use not found
     const user = await userCrud.loginUser(username, password);
-    res.json(formatUserResponse(user));
+    res.json(formatUserResponse(user, res));
   } catch (error) {
     handleAuthError(res, error);
   }
 });
 
-router.get('/:username/questions', async (req, res) => {
+router.get('/:username/questions', verifyToken, async (req, res) => {
   try {
     const questions = await userCrud.getUserQuestions(req.params.username);
     res.json(questions);
