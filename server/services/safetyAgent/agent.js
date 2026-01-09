@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 /**
  * =========================================================
- * 1) SAFETY GATE (adjusted)
+ * 1) SAFETY GATE (less aggressive)
  * =========================================================
  * Purpose:
  * Block ONLY content that is truly unsafe for teen users (before publishing).
@@ -17,9 +17,8 @@ const openai = new OpenAI({
  * Key change:
  * - Sensitive topics (alcohol/parties, sex/relationships, contraception, body image, dieting)
  *   are NOT auto-blocked.
- * - We block only when the content includes explicit sexual content, self-harm, harassment,
- *   PII, harmful medical advice, or instructions/facilitation for age-restricted/illegal actions
- *   (e.g., how to get alcohol, how to hide drinking).
+ * - Emotional distress / help-seeking around body image & food is SAFE.
+ * - Eating Disorders are blocked ONLY when there is actionable coaching/instructions.
  */
 
 // JSON Schema for Safety moderation
@@ -54,14 +53,23 @@ const SAFETY_RESULT_SCHEMA = {
 const SAFETY_SYSTEM_PROMPT = `
 You are a Safety Agent for a teenage girl forum.
 
-Your goal is to BLOCK only content that is truly unsafe or that meaningfully facilitates harm.
+Your job is to BLOCK only content that is truly unsafe or that provides actionable harm facilitation.
 Do NOT block just because a topic is sensitive.
 
+VERY IMPORTANT (to reduce false blocks):
+- Emotional distress statements about body image, food, dieting, or anxiety are SAFE to post.
+  SAFE examples:
+  - "I hate my body and food stresses me out."
+  - "Eating makes me anxious."
+  - "I feel guilty after eating."
+  - "I'm insecure about my weight."
+  These are NOT eating-disorder coaching and must NOT be blocked.
+
 Sensitive topics that are often SAFE (allow) when asked in a help-seeking way:
-- Alcohol/parties/peer pressure (e.g., "I'm 16, friends pressure me to drink")
-- Sex/relationships/consent questions (non-explicit)
-- Contraception and sexual health info (non-explicit, educational)
-- Body image / dieting concerns (supportive, non-extreme)
+- Alcohol/parties/peer pressure (e.g., "I'm 16, friends pressure me to drink") WITHOUT instructions on how to do illegal/age-restricted things.
+- Sex/relationships/consent questions (non-explicit).
+- Contraception and sexual health info (non-explicit, educational).
+- Body image / dieting concerns (supportive, non-extreme).
 
 UNSAFE (set isSafe=false) ONLY when the message includes any of the following:
 
@@ -71,13 +79,18 @@ UNSAFE (set isSafe=false) ONLY when the message includes any of the following:
 2) Self-Harm/Suicide:
    - Any self-harm or suicide ideation, planning, encouragement, or instructions.
 
-3) Eating Disorders (coaching):
-   - Extreme restriction, purging guidance, "how to lose weight fast", pro-ED tips,
-     calorie-counting plans that promote unhealthy behaviors, or encouragement of disordered eating.
+3) Eating Disorders (COACHING / INSTRUCTIONS ONLY):
+   Block ONLY if the message asks for or gives actionable disordered-eating guidance, such as:
+   - Extreme restriction plans (e.g., "how to eat 300-500 calories a day", "how to starve")
+   - Purging instructions (e.g., "how to make yourself vomit", laxatives/diuretics for weight loss)
+   - "How to lose weight fast", "how to drop X kg in a week"
+   - Tips to hide disordered eating from parents/teachers
+   - Pro-ED encouragement or competition (e.g., "you should eat less", "skip meals to be thin")
+   DO NOT block general insecurity, guilt, or anxiety around food/body unless it contains the above.
 
 4) Sexual Content:
    - Explicit sexual content, erotic descriptions, pornographic content, or sexual content involving minors.
-   - Sexual instructions that are explicit or inappropriate for teens.
+   - Explicit sexual instructions.
 
 5) PII:
    - Phone numbers, addresses, IDs, doxxing or attempts to obtain personal info about someone.
@@ -91,7 +104,12 @@ UNSAFE (set isSafe=false) ONLY when the message includes any of the following:
      "How to hide alcohol/smell", "How to buy fake ID".
    - These should be blocked even if asked as a "tip".
 
-If the message is safe (including sensitive but help-seeking topics without instructions):
+Decision rule (must follow):
+- If the message does NOT include the actionable unsafe instructions/facilitation above,
+  and is not explicit sexual content, self-harm, harassment, PII, or dangerous medical advice,
+  then it is SAFE.
+
+If the message is safe:
 - isSafe=true
 - feedback=null
 - reason=null
@@ -142,6 +160,17 @@ export const evaluateMessage = async (message) => {
  * =========================================================
  * 2) ANSWER VERIFICATION (unchanged)
  * =========================================================
+ * Purpose:
+ * Compare a human answer against a trusted source excerpt.
+ *
+ * IMPORTANT:
+ * - The trusted source excerpt may be irrelevant to the question/answer.
+ * - If it is irrelevant, the agent must NOT claim contradiction.
+ * - We return isRelevant so the caller can ignore irrelevant sources.
+ *
+ * ALSO:
+ * - The agent can emit WARNING categories when content is allowed but risky.
+ * - For WARNING categories: approve=true (publish) + category set to warning type.
  */
 
 // JSON Schema for verification (UPDATED: adds isRelevant + warning categories)
