@@ -66,7 +66,7 @@ router.post("/:id/messages", async (req, res) => {
     if (!check) return; // blocked (response already sent)
 
     // 2) Add to DB
-    const savedMessage = await dbService.addMessageToChat(id, text, username);
+    const savedMessage = await dbService.addMessageToChat(id, text, username, check.warning);
     if (!savedMessage) return sendChatNotFound(res);
 
     // 3) Build payload with warning so EVERYONE (socket + sender) gets it

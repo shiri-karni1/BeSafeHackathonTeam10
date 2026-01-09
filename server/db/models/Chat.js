@@ -5,7 +5,11 @@ const messageSchema = new mongoose.Schema({
   username: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   isSafe: { type: Boolean, default: true },
-  feedback: String
+  feedback: String,
+  warning: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  }
 });
 
 const chatSchema = new mongoose.Schema({
