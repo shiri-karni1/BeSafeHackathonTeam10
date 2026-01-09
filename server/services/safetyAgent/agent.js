@@ -9,10 +9,17 @@ const openai = new OpenAI({
 
 /**
  * =========================================================
- * 1) SAFETY GATE (your existing logic)
+ * 1) SAFETY GATE (adjusted)
  * =========================================================
  * Purpose:
- * Block content that is unsafe for teen users (before publishing).
+ * Block ONLY content that is truly unsafe for teen users (before publishing).
+ *
+ * Key change:
+ * - Sensitive topics (alcohol/parties, sex/relationships, contraception, body image, dieting)
+ *   are NOT auto-blocked.
+ * - We block only when the content includes explicit sexual content, self-harm, harassment,
+ *   PII, harmful medical advice, or instructions/facilitation for age-restricted/illegal actions
+ *   (e.g., how to get alcohol, how to hide drinking).
  */
 
 // JSON Schema for Safety moderation
@@ -46,17 +53,45 @@ const SAFETY_RESULT_SCHEMA = {
 
 const SAFETY_SYSTEM_PROMPT = `
 You are a Safety Agent for a teenage girl forum.
-Your goal is to block unsafe content.
 
-UNSAFE CATEGORIES:
-1. Bullying/Harassment
-2. Self-Harm/Suicide
-3. Eating Disorders
-4. Sexual Content
-5. PII (Phone/Address)
-6. Medical Misinformation
+Your goal is to BLOCK only content that is truly unsafe or that meaningfully facilitates harm.
+Do NOT block just because a topic is sensitive.
 
-If the message is safe:
+Sensitive topics that are often SAFE (allow) when asked in a help-seeking way:
+- Alcohol/parties/peer pressure (e.g., "I'm 16, friends pressure me to drink")
+- Sex/relationships/consent questions (non-explicit)
+- Contraception and sexual health info (non-explicit, educational)
+- Body image / dieting concerns (supportive, non-extreme)
+
+UNSAFE (set isSafe=false) ONLY when the message includes any of the following:
+
+1) Bullying/Harassment:
+   - Insults, humiliation, threats, targeted harassment.
+
+2) Self-Harm/Suicide:
+   - Any self-harm or suicide ideation, planning, encouragement, or instructions.
+
+3) Eating Disorders (coaching):
+   - Extreme restriction, purging guidance, "how to lose weight fast", pro-ED tips,
+     calorie-counting plans that promote unhealthy behaviors, or encouragement of disordered eating.
+
+4) Sexual Content:
+   - Explicit sexual content, erotic descriptions, pornographic content, or sexual content involving minors.
+   - Sexual instructions that are explicit or inappropriate for teens.
+
+5) PII:
+   - Phone numbers, addresses, IDs, doxxing or attempts to obtain personal info about someone.
+
+6) Medical Misinformation:
+   - Harmful advice such as telling someone to stop prescribed meds, unsafe treatments,
+     or dangerous instructions.
+
+7) Instructions/facilitation for age-restricted or illegal activities:
+   - Examples: "How can I get alcohol at 16?", "How do I drink without getting caught?",
+     "How to hide alcohol/smell", "How to buy fake ID".
+   - These should be blocked even if asked as a "tip".
+
+If the message is safe (including sensitive but help-seeking topics without instructions):
 - isSafe=true
 - feedback=null
 - reason=null
@@ -64,9 +99,9 @@ If the message is safe:
 
 If unsafe:
 - isSafe=false
-- category=best match
+- category=best match from the enum list
 - reason=short reason
-- feedback=gentle supportive alternative
+- feedback=gentle supportive alternative (what they can ask instead / safer direction)
 
 Return JSON only.
 `.trim();
@@ -105,19 +140,8 @@ export const evaluateMessage = async (message) => {
 
 /**
  * =========================================================
- * 2) ANSWER VERIFICATION (UPDATED: adds WARN categories)
+ * 2) ANSWER VERIFICATION (unchanged)
  * =========================================================
- * Purpose:
- * Compare a human answer against a trusted source excerpt.
- *
- * IMPORTANT (updated behavior):
- * - The trusted source excerpt may be irrelevant to the question/answer.
- * - If it is irrelevant, the agent must NOT claim contradiction.
- * - We return isRelevant so the caller can ignore irrelevant sources.
- *
- * ALSO:
- * - The agent can emit WARNING categories when content is allowed but risky.
- * - For WARNING categories: approve=true (publish) + category set to warning type.
  */
 
 // JSON Schema for verification (UPDATED: adds isRelevant + warning categories)
@@ -213,7 +237,14 @@ const VERIFICATION_SCHEMA = {
       },
       confidence: { type: "number", minimum: 0, maximum: 1 },
     },
-    required: ["isRelevant", "approve", "category", "reason", "suggestedFix", "confidence"],
+    required: [
+      "isRelevant",
+      "approve",
+      "category",
+      "reason",
+      "suggestedFix",
+      "confidence",
+    ],
   },
 };
 
