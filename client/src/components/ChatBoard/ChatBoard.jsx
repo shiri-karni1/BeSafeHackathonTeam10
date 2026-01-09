@@ -10,45 +10,31 @@ const formatTime = (date) => {
   return d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
 };
 
-// ✅ פורמט קבוע: 
-// ההודעה נחסמה
-// סיבה:
-// הצעת ניסוח:
+// Builds a consistent message for BLOCK/WARN responses (supports string or object payloads)
 const buildPreciseReason = (obj) => {
-  // תומך גם במקרים שהשרת שולח reason ישירות כמחרוזת
   if (!obj) {
     return `ההודעה נחסמה\nסיבה: לא התקבלה סיבה מהשרת\nהצעת ניסוח:`;
   }
-
   if (typeof obj === "string") {
     return `ההודעה נחסמה\nסיבה: ${obj}\nהצעת ניסוח:`;
   }
 
-  const reason =
-    obj.reason ||
-    obj.message ||
-    "לא התקבלה סיבה מהשרת";
-
-  const suggestion =
-    obj.feedback ||
-    obj.suggestedFix ||
-    "";
+  const reason = obj.reason || obj.message || "לא התקבלה סיבה מהשרת";
+  const suggestion = obj.feedback || obj.suggestedFix || "";
 
   return `ההודעה נחסמה\nסיבה: ${reason}\nהצעת ניסוח: ${suggestion}`;
 };
 
-const getMsgSeverity = (msg) => {
-  // צהוב אם יש warning
-  if (msg?.warning) return "warn";
-  // ירוק אחרת
-  return "allow";
-};
-
+// Normalizes warning payload shape to a single consistent object
 const normalizeWarning = (warning) => {
-  // תומך בכמה מבנים אפשריים:
   if (!warning) return null;
   if (warning.warning) return warning.warning;
   return warning;
+};
+
+const getMsgSeverity = (msg) => {
+  if (msg?.warning) return "warn";
+  return "allow";
 };
 
 const ChatBoard = ({ roomId, currentUser }) => {
@@ -56,19 +42,13 @@ const ChatBoard = ({ roomId, currentUser }) => {
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef(null);
 
-  // toast: אדום לחסימה, צהוב לאזהרה, ירוק למידע
-  const [toast, setToast] = useState(null); // { type: "block"|"warn"|"info", text }
-  const [selectedMsg, setSelectedMsg] = useState(null); // message clicked -> modal
+  const [toast, setToast] = useState(null);
 
   const socket = socketService.getSocket();
 
   useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 7000);
-    return () => clearTimeout(t);
-  }, [toast]);
+    if (!roomId) return;
 
-  useEffect(() => {
     const fetchHistory = async () => {
       try {
         const response = await fetch(`http://localhost:8080/chats/${roomId}`);
@@ -77,6 +57,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
         const msgs = data?.messages || [];
         const history = msgs.map((msg) => ({
           ...msg,
+          warning: normalizeWarning(msg.warning),
           isMine: (msg.sender || msg.username) === currentUser?.name,
         }));
 
@@ -87,8 +68,6 @@ const ChatBoard = ({ roomId, currentUser }) => {
       }
     };
 
-    if (!roomId) return;
-
     fetchHistory();
     socket.emit("join_room", roomId);
   }, [roomId, currentUser, socket]);
@@ -96,11 +75,16 @@ const ChatBoard = ({ roomId, currentUser }) => {
   useEffect(() => {
     const handleReceiveMessage = (data) => {
       setMessages((prev) => {
+        // De-dupe by _id to avoid duplicates between REST + socket delivery
         if (data?._id && prev.some((m) => m._id === data._id)) return prev;
 
         return [
           ...prev,
-          { ...data, isMine: (data.sender || data.username) === currentUser?.name },
+          {
+            ...data,
+            warning: normalizeWarning(data.warning),
+            isMine: (data.sender || data.username) === currentUser?.name,
+          },
         ];
       });
     };
@@ -110,6 +94,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
   }, [socket, currentUser]);
 
   useEffect(() => {
+    // Auto-scroll to latest message
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -130,23 +115,35 @@ const ChatBoard = ({ roomId, currentUser }) => {
       const body = await res.json().catch(() => ({}));
       console.log("save message status:", res.status, body);
 
-      // 🔴 חסימה: פורמט קבוע
-      if (!res.ok || body?.isSafe === false || body?.moderation?.status === "BLOCK" || body?.blocked) {
+      // Treat any non-OK or moderation block as "blocked"
+      if (
+        !res.ok ||
+        body?.isSafe === false ||
+        body?.moderation?.status === "BLOCK" ||
+        body?.blocked
+      ) {
         setToast({ type: "block", text: `🔴 ${buildPreciseReason(body)}` });
         return;
       }
 
-      // 🟡 warning: אם תרצי שגם אזהרה תשתמש באותו פורמט — זה כבר קורה כאן
+      // Show warning toast (does not block sending)
       const warning = normalizeWarning(body?.warning);
       if (warning) {
         setToast({ type: "warn", text: `🟡 ${buildPreciseReason(warning)}` });
       }
 
-      // להוסיף מקומית אם עוד לא הגיע מהסוקט
+      // Optimistic append if socket hasn't delivered it yet
       if (body?._id) {
         setMessages((prev) => {
           if (prev.some((m) => m._id === body._id)) return prev;
-          return [...prev, { ...body, isMine: true }];
+          return [
+            ...prev,
+            {
+              ...body,
+              warning: normalizeWarning(body.warning),
+              isMine: true,
+            },
+          ];
         });
       }
 
@@ -157,113 +154,94 @@ const ChatBoard = ({ roomId, currentUser }) => {
     }
   };
 
+  // Clicking a warning message opens the "details" as a toast (same UI as normal warn/block)
   const openDetails = (msg) => {
-    if (!msg) return;
-    // פותחים מודאל רק אם יש warning (אחרת זה סתם מציק)
-    if (msg.warning) setSelectedMsg(msg);
+    if (!msg?.warning) return;
+
+    const detailsText =
+      `🟡 פירוט אזהרה (AI)\n` +
+      `הודעה: ${msg.text}\n\n` +
+      buildPreciseReason(msg.warning);
+
+    setToast({ type: "warn", text: detailsText });
   };
 
-  const closeDetails = () => setSelectedMsg(null);
-
   return (
-  <div className="chat-board">
-    {/* Modal for warning details */}
-    {selectedMsg && (
-      <div className="modal-backdrop" onClick={closeDetails}>
-        <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-title">🟡 פירוט אזהרה (AI)</div>
+    <div className="chat-board">
+      <div className="messages-display">
+        {messages.map((msg, index) => {
+          const severity = getMsgSeverity(msg);
 
-          <div className="modal-body">
-            <div className="modal-row">
-              <b>הודעה:</b> {selectedMsg.text}
+          return (
+            <div
+              key={msg._id || msg.id || index}
+              className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${
+                msg.warning ? "clickable" : ""
+              }`}
+              onClick={() => openDetails(msg)}
+              title={msg.warning ? "לחצי כדי לראות פירוט אזהרה" : ""}
+              role={msg.warning ? "button" : undefined}
+              tabIndex={msg.warning ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (!msg.warning) return;
+                if (e.key === "Enter" || e.key === " ") openDetails(msg);
+              }}
+            >
+              {!msg.isMine && (
+                <div className="msg-sender">{msg.sender || msg.username}</div>
+              )}
+
+              {msg.warning && (
+                <div className="warning-banner">
+                  🟡{" "}
+                  {msg.warning?.reason ||
+                    "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
+                  <span className="warning-hint"> (לחצי לפירוט)</span>
+                </div>
+              )}
+
+              <div className="msg-text">{msg.text}</div>
+              <div className="msg-time">{formatTime(msg.createdAt)}</div>
             </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
 
-            <div className="modal-row">
-              <b>פרטי אזהרה:</b>
-              <pre className="modal-pre">
-                {buildPreciseReason(normalizeWarning(selectedMsg.warning))}
-              </pre>
-            </div>
-          </div>
+      {toast && (
+        <div className={`toast toast-${toast.type}`} role="alert" aria-live="polite">
+          <pre className="toast-text">{toast.text}</pre>
+          <button
+            className="toast-close"
+            onClick={() => setToast(null)}
+            aria-label="סגור"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
-          <div className="modal-actions">
-            <button className="btn btn-primary" onClick={closeDetails}>
-              סגור
-            </button>
-          </div>
+      <div className="input-container">
+        <div className="input-box">
+          <textarea
+            placeholder="אני חושבת ש..."
+            value={inputValue}
+            rows="2"
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+          />
+          <button onClick={handleSendMessage} className="send-btn">
+            <SendIcon style={{ transform: "scaleX(-1)" }} />
+          </button>
         </div>
       </div>
-    )}
-
-    <div className="messages-display">
-      {messages.map((msg, index) => {
-        const severity = getMsgSeverity(msg);
-
-        return (
-          <div
-            key={msg._id || msg.id || index}
-            className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${
-              msg.warning ? "clickable" : ""
-            }`}
-            onClick={() => openDetails(msg)}
-            title={msg.warning ? "לחצי כדי לראות פירוט אזהרה" : ""}
-            role={msg.warning ? "button" : undefined}
-            tabIndex={msg.warning ? 0 : undefined}
-            onKeyDown={(e) => {
-              if (!msg.warning) return;
-              if (e.key === "Enter" || e.key === " ") openDetails(msg);
-            }}
-          >
-            {!msg.isMine && (
-              <div className="msg-sender">{msg.sender || msg.username}</div>
-            )}
-
-            {msg.warning && (
-              <div className="warning-banner">
-                🟡 {normalizeWarning(msg.warning)?.reason || "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
-                <span className="warning-hint"> (לחצי לפירוט)</span>
-              </div>
-            )}
-
-            <div className="msg-text">{msg.text}</div>
-            <div className="msg-time">{formatTime(msg.createdAt)}</div>
-          </div>
-        );
-      })}
-      <div ref={messagesEndRef} />
     </div>
-
-    {/* ✅ Toast — עכשיו מתחת להודעות ומעל תיבת הטקסט */}
-    {toast && (
-      <div className={`toast toast-${toast.type}`} role="alert" aria-live="polite">
-        <pre className="toast-text">{toast.text}</pre>
-        <button className="toast-close" onClick={() => setToast(null)} aria-label="סגור">
-          ✕
-        </button>
-      </div>
-    )}
-
-    <div className="input-container">
-      <div className="input-box">
-        <textarea
-          placeholder="אני חושבת ש..."
-          value={inputValue}
-          rows="2"
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSendMessage();
-            }
-          }}
-        />
-        <button onClick={handleSendMessage} className="send-btn">
-          <SendIcon style={{ transform: "scaleX(-1)" }} />
-        </button>
-      </div>
-    </div>
-  </div>
-);
+  );
 };
 
 ChatBoard.propTypes = {
