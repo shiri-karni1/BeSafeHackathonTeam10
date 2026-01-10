@@ -21,8 +21,9 @@ const Home = () => {
       try {
         setLoading(true);
         const response = await api.get('/chats');
-        // Filter out chats created by current user
-        const filteredChats = response.data.filter(chat => chat.username !== user?.username);
+        // Filter out chats created by current user // not implemented now
+        //const filteredChats = response.data.filter(chat => chat.username !== user?.username);
+        const filteredChats = response.data;
         // Sort by createdAt - newest first
         const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setChats(sortedChats);
