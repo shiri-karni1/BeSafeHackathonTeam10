@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import socketService from "../SocketFactory/SocketFactory";
 import PropTypes from "prop-types";
 import SendIcon from "@mui/icons-material/Send";
+import api from "../../services/axios.js";
 
 const formatTime = (date) => {
   if (!date) return "";
@@ -71,8 +72,8 @@ const ChatBoard = ({ roomId, currentUser }) => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/chats/${roomId}`);
-        const data = await response.json();
+        const response = await api.get(`/chats/${roomId}`);
+        const data = response.data;
 
         const msgs = data?.messages || [];
         const history = msgs.map((msg) => ({
@@ -118,20 +119,16 @@ const ChatBoard = ({ roomId, currentUser }) => {
     if (!textToSend) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/chats/${roomId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: textToSend,
-          username: currentUser?.name || "Guest",
-        }),
+      const res = await api.post(`/chats/${roomId}/messages`, {
+        text: textToSend,
+        username: currentUser?.name || "Guest",
       });
 
-      const body = await res.json().catch(() => ({}));
+      const body = res.data;
       console.log("save message status:", res.status, body);
 
       // 🔴 חסימה: פורמט קבוע
-      if (!res.ok || body?.isSafe === false || body?.moderation?.status === "BLOCK" || body?.blocked) {
+      if (body?.isSafe === false || body?.moderation?.status === "BLOCK" || body?.blocked) {
         setToast({ type: "block", text: `🔴 ${buildPreciseReason(body)}` });
         return;
       }
