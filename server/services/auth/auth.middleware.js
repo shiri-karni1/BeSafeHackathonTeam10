@@ -1,16 +1,14 @@
 import jwt from 'jsonwebtoken';
 import AppError from '../../utils/AppError.js';
 
-/**
- * Generate JWT token for a user
- */
+// Generate JWT token for a user
 export const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
 
-/**
+/*
  * Middleware to verify JWT token from cookies
  * Attaches decoded user data to req.user
  */

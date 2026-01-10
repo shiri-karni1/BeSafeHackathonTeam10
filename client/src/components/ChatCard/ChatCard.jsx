@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Style from './ChatCard.module.css';
 import PropTypes from 'prop-types';
-import api from '../../services/api.js';
+import api from '../../services/axios.js';
 
 export default function ChatCard({ chatId }) {
     const [chat, setChat] = useState(null);

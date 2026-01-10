@@ -50,7 +50,8 @@ app.use(cookieParser());
 app.use('/images', express.static(path.join(__dirname, 'images'))); // Serve static images
 
 app.use(cors({
-  origin: process.env.CLIENT_URL
+  origin: process.env.CLIENT_URL,
+  credentials: true // Allow cookies to be sent
 }));
 
 // Initialize Socket.IO

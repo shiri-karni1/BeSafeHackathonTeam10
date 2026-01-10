@@ -31,12 +31,19 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("Login attempt for username:", username);
     // loginUser throws if credentials are invalid or use not found
     const user = await userCrud.loginUser(username, password);
     res.json(formatUserResponse(user, res));
   } catch (error) {
     handleAuthError(res, error);
   }
+});
+
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
 });
 
 router.get('/:username/questions', verifyToken, async (req, res) => {

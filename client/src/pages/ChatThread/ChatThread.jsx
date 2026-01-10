@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import ChatHeader from "../../components/ChatHeader/ChatHeader.jsx";
 import styles from "./ChatThread.module.css";
-import api from '../../services/api.js';
+import api from '../../services/axios.js';
 import ChatBoard from '../../components/ChatBoard/ChatBoard.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 export default function ChatThread() {
   const { chatId } = useParams();
   const [chat, setChat] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useContext(AuthContext);
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-  const currentUserName = currentUser?.username || "אורח";
+  const currentUserName = user?.username || "אורח";
 
   useEffect(() => {
     const fetchChat = async () => {
