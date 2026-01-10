@@ -1,5 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 
+.headerTopRow {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+
+.profileContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.username {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  padding: 4px 12px;
+  border-radius: 16px;
+  letter-spacing: 0.5px;
+}
+
+.headerCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.chatTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: 1.08rem;
+  color: #f3e6f3;
+  text-align: center;
+  margin-bottom: 10px;
+  margin-top: 0;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+
+}
+
 
 .chatHeader {
   background-color: #885D80;
@@ -46,12 +103,23 @@
 }
 
 .avatar {
-  width: 50px;
-  height: 50px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
 }
 
 .username {
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 14px;
+  letter-spacing: 0.5px;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  align-self: start;
   font-size: 1rem;
   margin: 5px 0 0 0;
 }
@@ -80,6 +148,13 @@
   opacity: 0.9;
 }
 
+.backButton {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
 
 @media (max-width: 768px) {
   .chatHeader {
