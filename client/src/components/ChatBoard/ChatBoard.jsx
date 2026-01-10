@@ -179,21 +179,23 @@ const ChatBoard = ({ roomId, currentUser }) => {
                 if (e.key === "Enter" || e.key === " ") openDetails(msg);
               }}
             >
-              {!msg.isMine && (
-                <div className="msg-sender">{msg.sender || msg.username}</div>
-              )}
+              <div className="msg-row msg-text-row">
+                {msg.warning && (
+                  <div className="warning-banner">
+                    🟡{" "}
+                    {msg.warning?.reason ||
+                      "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
+                    <span className="warning-hint"> (לחצי לפירוט)</span>
+                  </div>
+                )}
+                <div className="msg-text">{msg.text}</div>
+              </div>
 
-              {msg.warning && (
-                <div className="warning-banner">
-                  🟡{" "}
-                  {msg.warning?.reason ||
-                    "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
-                  <span className="warning-hint"> (לחצי לפירוט)</span>
-                </div>
-              )}
-
-              <div className="msg-text">{msg.text}</div>
-              <div className="msg-time">{formatTime(msg.createdAt)}</div>
+              <div className="msg-separator"></div>
+              <div className="msg-row msg-bottom-row">
+                <span className="msg-time">{formatTime(msg.createdAt)}</span>
+                <span className="msg-sender">{msg.sender || msg.username}</span>
+              </div>
             </div>
           );
         })}
