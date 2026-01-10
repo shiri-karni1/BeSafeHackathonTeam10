@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext.jsx';
 import styles from './Logout.module.css';
 
 export default function Logout() {
     const navigate = useNavigate();
+    const { logout } = useContext(AuthContext);
 
-    const handleLogout = () => {
-        // Remove user from localStorage
-        localStorage.removeItem('currentUser');
-        // Navigate to login page
+    const handleLogout = async () => {
+        await logout();
         navigate('/login');
     };
 

@@ -2,13 +2,14 @@ import express from "express";
 import * as dbService from "../../db/crud/chat.crud.js";
 import * as socketService from "../../services/socket/socket.service.js";
 import { sendChatNotFound, handleSafetyCheck, handleError } from "./helpers.js";
+import { verifyToken } from "../../services/auth/auth.middleware.js";
 
 const router = express.Router();
 
 // --- Routes ---
 
-// Get all chat titles
-router.get("/", async (req, res) => {
+// Get all chat titles (requires authentication)
+router.get("/", verifyToken, async (req, res) => {
   try {
     const chats = await dbService.getAllChats();
     res.json(chats);
@@ -17,8 +18,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get chat + messages by ID
-router.get("/:id", async (req, res) => {
+// Get chat + messages by ID (requires authentication)
+router.get("/:id", verifyToken, async (req, res) => {
   try {
     const chat = await dbService.getChatById(req.params.id);
     if (!chat) return sendChatNotFound(res);
@@ -28,8 +29,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create a new chat
-router.post("/", async (req, res) => {
+// Create a new chat (requires authentication)
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { title, content, username } = req.body;
 
@@ -55,8 +56,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Add message to a chat
-router.post("/:id/messages", async (req, res) => {
+// Add message to a chat (requires authentication)
+router.post("/:id/messages", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { text, username } = req.body;

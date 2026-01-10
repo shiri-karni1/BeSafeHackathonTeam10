@@ -1,11 +1,5 @@
-import jwt from 'jsonwebtoken';
+import { generateToken } from '../../services/auth/auth.middleware.js';
 import AppError from '../../utils/AppError.js';
-
-export const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
-    expiresIn: '30d',
-  });
-};
 
 export const handleAuthError = (res, error) => {
   // Handle operational errors (known errors)
@@ -29,10 +23,24 @@ export const handleAuthError = (res, error) => {
   res.status(500).json({ message: 'Internal Server Error' });
 };
 
-export const formatUserResponse = (user) => {
+/**
+ * Format user response with JWT token
+ * Sets the token in cookies and also returns it in the response
+ */
+export const formatUserResponse = (user, res) => {
+  const token = generateToken(user._id);
+  
+  // Set token in httpOnly cookie (secure in production)
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
   return {
     _id: user.id,
     username: user.username,
-    token: generateToken(user._id),
+    token, // Also return in response for client-side storage if needed
   };
 };

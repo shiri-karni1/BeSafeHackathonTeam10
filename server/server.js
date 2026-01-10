@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import cookieParser from 'cookie-parser';
 import connectDB from './db/config/db.js';
 import chatRoutes from './routes/chats/index.js';
 import userRoutes from './routes/users/index.js';
@@ -45,10 +46,12 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use('/images', express.static(path.join(__dirname, 'images'))); // Serve static images
 
 app.use(cors({
-  origin: process.env.CLIENT_URL
+  origin: process.env.CLIENT_URL,
+  credentials: true // Allow cookies to be sent
 }));
 
 // Initialize Socket.IO

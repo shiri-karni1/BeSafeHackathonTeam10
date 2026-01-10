@@ -1,7 +1,7 @@
 import logo from '../../assets/logo.png';
 import styles from './registration.module.css';
 import { useState } from 'react';
-import api from '../../services/api.js';
+import api from '../../services/axios.js';
 import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {

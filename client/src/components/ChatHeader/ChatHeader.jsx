@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useNavigate } from 'react-router-dom';
 
-
-
 const ChatHeader = ({ chat }) => {
   const navigate = useNavigate();
 
@@ -19,7 +17,7 @@ const ChatHeader = ({ chat }) => {
   return (
     <div className={styles.chatHeader}>
       <div className={styles.backButtonContainer}>
-      <a href="/"><button className={styles.backButton} onClick={handleBackClick}><ChevronLeftIcon /></button></a>
+      <button className={styles.backButton} onClick={handleBackClick}><ChevronLeftIcon /></button>
       </div>
       <div className={styles.headerTitleAndProfile}>
         <div className = {styles.profileContainer}>

@@ -1,14 +1,16 @@
 import logo from '../../assets/logo.png';
 import styles from './login.module.css';
-import { useState } from 'react';
-import api from '../../services/api.js';
+import { useState, useContext } from 'react';
+import api from '../../services/axios.js';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,10 +30,12 @@ const Login = () => {
                 password 
             });
             const user = response.data;
-            // Store user in localStorage
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            // Navigate to home page
-            navigate('/');
+            // Store user in auth context
+            login(user);
+            // Wait for state update before navigating
+            setTimeout(() => {
+                navigate('/', { replace: true });
+            }, 0);
         } catch (err) {
             console.error('Error during login:', err);
             setError(err.response?.data?.message || 'שגיאה בתהליך ההתחברות');

@@ -1,10 +1,11 @@
 import styles from './Home.module.css';
 import logo from '../../assets/logo.png';
 import { ChatCard } from '../../components/ChatCard/ChatCard.jsx';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api.js';
+import api from '../../services/axios.js';
 import Logout from '../../components/Logout/Logout.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Home = () => {
   const [chats, setChats] = useState([]);
@@ -13,22 +14,15 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const chatsPerPage = 6;
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    // Check if user is logged in
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-
     const fetchChats = async () => {
       try {
         setLoading(true);
         const response = await api.get('/chats');
-        const userData = JSON.parse(currentUser);
         // Filter out chats created by current user
-        const filteredChats = response.data.filter(chat => chat.username !== userData.username);
+        const filteredChats = response.data.filter(chat => chat.username !== user?.username);
         // Sort by createdAt - newest first
         const sortedChats = filteredChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setChats(sortedChats);
@@ -41,7 +35,7 @@ const Home = () => {
     };
 
     fetchChats();
-  }, [navigate]);
+  }, [user]);
 
   // Pagination calculations
   const indexOfLastChat = currentPage * chatsPerPage;

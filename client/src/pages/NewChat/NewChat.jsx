@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from "./NewChat.module.css";
 import logo from "../../assets/logo.png";
-import api from '../../services/api.js';
+import api from '../../services/axios.js';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 export default function NewChat() {
     const [title, setTitle] = useState('');
@@ -10,6 +11,7 @@ export default function NewChat() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,9 +25,7 @@ export default function NewChat() {
             setLoading(true);
             setError(null);
 
-            // Get current user from localStorage
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            const username = currentUser?.username;
+            const username = user?.username;
             if (!username) {
                 setError('משתמש לא מחובר');
                 setLoading(false);
