@@ -16,19 +16,19 @@ const ChatHeader = ({ chat }) => {
   }
   return (
     <div className={styles.chatHeader}>
-      <div className={styles.backButtonContainer}>
-      <button className={styles.backButton} onClick={handleBackClick}><ChevronLeftIcon /></button>
-      </div>
-      <div className={styles.headerTitleAndProfile}>
-        <div className = {styles.profileContainer}>
+      <div className={styles.topRow}>
+        <div className={styles.profileContainer}>
           <img src={profileIcon} alt="User Avatar" className={styles.avatar} />
           <p className={styles.username}>{chat.username}</p>
-        </div>        
-        <h3 className={styles.chatTitle}>{chat.title}</h3>
-      </div>
-        <div className={styles.subtitle}>
-          <p>{chat.content}</p>
         </div>
+        <h3 className={styles.chatTitle}>{chat.title}</h3>
+        <div className={styles.backButtonContainer}>
+          <button className={styles.backButton} onClick={handleBackClick}><ChevronLeftIcon /></button>
+        </div>
+      </div>
+      <div className={styles.centerContent}>
+        <p className={styles.subtitle}>{chat.content}</p>
+      </div>
     </div>
   );
 };
