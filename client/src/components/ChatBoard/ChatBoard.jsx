@@ -102,6 +102,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
   const handleSendMessage = async () => {
     const textToSend = inputValue.trim();
     if (!textToSend) return;
+    setInputValue("");
 
     try {
       const res = await api.post(`/chats/${roomId}/messages`, {
@@ -139,7 +140,6 @@ const ChatBoard = ({ roomId, currentUser }) => {
         });
       }
 
-      setInputValue("");
     } catch (err) {
       console.error("save message network error:", err);
       setToast({ type: "block", text: "🔴 בעיית רשת — ההודעה לא נשמרה" });
