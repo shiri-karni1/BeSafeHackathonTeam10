@@ -46,6 +46,20 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
+// Verify current user's authentication status
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    // req.user.id is set by verifyToken middleware
+    const user = await userCrud.getUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ user: { id: user._id, username: user.username } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get('/:username/questions', verifyToken, async (req, res) => {
   try {
     const questions = await userCrud.getUserQuestions(req.params.username);

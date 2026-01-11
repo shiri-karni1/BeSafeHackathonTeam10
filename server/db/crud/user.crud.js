@@ -29,6 +29,11 @@ export const loginUser = async (username, password) => {
   return user;
 };
 
+export const getUserById = async (userId) => {
+  const user = await User.findById(userId).select('-password');
+  return user;
+};
+
 export const getUserQuestions = async (username) => {
   // Find chats where the username matches
   return await Chat.find({ username }).select('-messages');

@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import api from '../services/axios.js';
 
@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const login = (userData) => {
@@ -25,6 +25,41 @@ const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  // Set up axios interceptor once on mount to handle 401 errors globally
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // If JWT expires during a session, auto-logout
+        if (error.response?.status === 401) {
+          setUser(null);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => api.interceptors.response.eject(interceptor);
+  }, []);
+
+  // Verify authentication on mount using the httpOnly cookie
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const response = await api.get('/users/me');
+        if (response.data?.user) {
+          setUser(response.data.user);
+        }
+      } catch (err) {
+        // Silent fail - user is not authenticated
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyAuth();
+  }, []);
 
   const value = {
     user,
