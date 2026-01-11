@@ -1,54 +1,32 @@
-import { validateContent } from "../../services/safetyAgent/safety.service.js";
-import { verifyAnswer } from "../../services/verificationAgent/verification.service.js";
+import { validateMessage } from "../../services/agent/agent.js";
 import AppError from "../../utils/AppError.js";
 
 export const sendChatNotFound = (res) =>
   res.status(404).json({ message: "Chat not found" });
 
 /**
- * handleSafetyCheck now supports:
- * - BLOCK (Safety)         => returns null (and sends response)
- * - BLOCK (Verification)   => returns null (and sends response)
- * - WARN (Verification)    => returns { ok:true, warning:{...} }
- * - APPROVE                => returns { ok:true, warning:null }
+ * handleSafetyCheck validates content through unified agent.
+ * - BLOCK        => returns null (and sends response)
+ * - WARN         => returns { ok:true, warning:{...} }
+ * - APPROVE      => returns { ok:true, warning:null }
  */
 export const handleSafetyCheck = async (res, text, contextType) => {
-  // 1) SAFETY GATE (blocks unsafe teen content)
-  const safetyError = await validateContent(text, contextType);
-  if (safetyError) {
-    // NOTE: you currently return 200 on safetyError - keeping your behavior.
-    // If you prefer, change to 400/403.
-    res.status(200).json(safetyError);
-    return null; // Blocked
+  const result = await validateMessage({ text, contextType });
+
+  // null = approved
+  if (!result) {
+    return { ok: true, warning: null };
   }
 
-  // 2) VERIFICATION (warn or block only if relevant)
-  // If you don't have a "question", we can pass contextType as the question.
-  const verification = await verifyAnswer({
-    question: contextType || "Content",
-    answer: text,
-  });
-
-  // verifyAnswer returns:
-  // - null                 => approve
-  // - { approved:false ...} => block
-  // - { approved:true, warning:{...} ... } => warn
-  if (verification) {
-    if (verification.approved === false) {
-      // BLOCK (contradiction / harmful medical advice)
-      // choose status: 400 is typical; keeping consistent with "blocked" semantics
-      res.status(400).json(verification);
-      return null;
-    }
-
-    if (verification.approved === true && verification.warning) {
-      // WARN (publish but show warning)
-      return { ok: true, warning: verification.warning };
-    }
+  // Has warning but approved
+  if (result.ok && result.warning) {
+    return result;
   }
 
-  // APPROVE
-  return { ok: true, warning: null };
+  // Blocked (safety or verification)
+  const status = result.isSafe === false ? 200 : 400;
+  res.status(status).json(result);
+  return null;
 };
 
 export const handleError = (res, error) => {
