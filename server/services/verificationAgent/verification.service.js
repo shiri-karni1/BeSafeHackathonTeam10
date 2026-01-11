@@ -122,15 +122,21 @@ export const verifyAnswer = async ({ question, answer }) => {
     ...RELATIONSHIPS_SOURCES.sources,
   ];
 
-  for (const source of allSources) {
-    const trustedText = sourceToText(source);
+  // 🚀 PARALLEL: Check all sources at once instead of sequentially
+  const results = await Promise.all(
+    allSources.map(async (source) => {
+      const trustedText = sourceToText(source);
+      const result = await evaluateAnswerAgainstSource({
+        question,
+        answer,
+        trustedSourceText: trustedText,
+      });
+      return { result, source };
+    })
+  );
 
-    const result = await evaluateAnswerAgainstSource({
-      question,
-      answer,
-      trustedSourceText: trustedText,
-    });
-
+  // Process results: prioritize contradictions, then warnings
+  for (const { result, source } of results) {
     const isRelevant = result?.isRelevant === true;
 
     // 1) BLOCK on contradiction ONLY if the source is relevant
@@ -143,15 +149,16 @@ export const verifyAnswer = async ({ question, answer }) => {
       console.timeEnd("VerificationCheck");
       return buildRejection(result, source);
     }
+  }
 
-    // 2) WARN on red-flags ONLY if relevant
+  // 2) Check for warnings (second pass to prioritize contradictions first)
+  for (const { result } of results) {
+    const isRelevant = result?.isRelevant === true;
+
     if (isRelevant && WARNING_CATEGORIES.has(result?.category)) {
       console.timeEnd("VerificationCheck");
       return buildWarning(result);
     }
-
-    // 3) "Not Supported by Trusted Source" is NOT rejection anymore.
-    // Also: irrelevant sources should never cause block/warn.
   }
 
   console.timeEnd("VerificationCheck");
