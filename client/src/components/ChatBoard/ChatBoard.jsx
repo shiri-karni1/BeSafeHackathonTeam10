@@ -25,16 +25,24 @@ const formatTime = (date) => {
 // Builds a consistent message for BLOCK/WARN responses (supports string or object payloads)
 const buildPreciseReason = (obj) => {
   if (!obj) {
-    return `ההודעה נחסמה\nסיבה: לא התקבלה סיבה מהשרת\nהצעת ניסוח:`;
+    return  `ההודעה נחסמה\n` +
+      `סיבה: לא התקבלה סיבה מהשרת\n` +
+      `התייחסות: `;
   }
   if (typeof obj === "string") {
-    return `ההודעה נחסמה\nסיבה: ${obj}\nהצעת ניסוח:`;
+    return  `ההודעה נחסמה\n` +
+      `סיבה: ${obj}\n` +
+      `התייחסות: `;
   }
 
   const reason = obj.reason || obj.message || "לא התקבלה סיבה מהשרת";
-  const suggestion = obj.feedback || obj.suggestedFix || "";
+  const aiContext = obj.feedback || obj.suggestedFix || obj.context || "";
+   
 
-  return `ההודעה נחסמה\nסיבה: ${reason}\nהצעת ניסוח: ${suggestion}`;
+
+  return(`ההודעה נחסמה\n` +
+    `סיבה: ${reason}\n` +
+    `התייחסות: ${aiContext}`);
 };
 
 // Normalizes warning payload shape to a single consistent object
@@ -124,7 +132,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
       const body = res.data;
       console.log("save message status:", res.status, body);
 
-      // 🔴 חסימה: פורמט קבוע
+      // Handle BLOCK response
       if (body?.isSafe === false || body?.moderation?.status === "BLOCK" || body?.blocked) {
         setToast({ type: "block", text: `🔴 ${buildPreciseReason(body)}` });
         return;
