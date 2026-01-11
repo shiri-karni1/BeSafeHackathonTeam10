@@ -1,3 +1,10 @@
+
+.chat-date-separator {
+  text-align: center;
+  color: #888;
+  margin: 16px 0;
+  font-weight: bold;
+}
 .msg-bottom-row {
   display: flex;
   flex-direction: row;
@@ -41,6 +48,8 @@
 .msg-text-row {
   justify-content: flex-end;
   margin-bottom: 6px;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .msg-text {
@@ -49,6 +58,7 @@
   text-align: right;
   word-break: break-word;
   width: 100%;
+  margin: 2px;
 }
 
 .msg-separator {
