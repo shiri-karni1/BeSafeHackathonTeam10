@@ -50,7 +50,7 @@ const AuthProvider = ({ children }) => {
         if (response.data?.user) {
           setUser(response.data.user);
         }
-      } catch (err) {
+      } catch {
         // Silent fail - user is not authenticated
         setUser(null);
       } finally {
