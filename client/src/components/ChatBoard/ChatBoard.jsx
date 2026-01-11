@@ -1,4 +1,15 @@
 import { useState, useEffect, useRef } from "react";
+// Formats a date to "DD/MM/YY" in Hebrew locale
+const formatDate = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
 import socketService from "../SocketFactory/SocketFactory";
 import PropTypes from "prop-types";
 import SendIcon from "@mui/icons-material/Send";
@@ -158,45 +169,53 @@ const ChatBoard = ({ roomId, currentUser }) => {
     setToast({ type: "warn", text: detailsText });
   };
 
+
   return (
     <div className="chat-board">
       <div className="messages-display">
         {messages.map((msg, index) => {
           const severity = getMsgSeverity(msg);
-
+          const msgDate = formatDate(msg.createdAt);
+          const prevMsgDate = index === 0 ? null : formatDate(messages[index - 1]?.createdAt);
+          const showDate = msgDate !== prevMsgDate;
           return (
-            <div
-              key={msg._id || msg.id || index}
-              className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${
-                msg.warning ? "clickable" : ""
-              }`}
-              onClick={() => openDetails(msg)}
-              title={msg.warning ? "לחצי כדי לראות פירוט אזהרה" : ""}
-              role={msg.warning ? "button" : undefined}
-              tabIndex={msg.warning ? 0 : undefined}
-              onKeyDown={(e) => {
-                if (!msg.warning) return;
-                if (e.key === "Enter" || e.key === " ") openDetails(msg);
-              }}
-            >
-              <div className="msg-row msg-text-row">
-                {msg.warning && (
-                  <div className="warning-banner">
-                    🟡{" "}
-                    {msg.warning?.reason ||
-                      "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
-                    <span className="warning-hint"> (לחצי לפירוט)</span>
-                  </div>
-                )}
-                <div className="msg-text">{msg.text}</div>
-              </div>
+            <>
+              {showDate && (
+                <div key={`date-${msgDate}-${index}`} className="chat-date-separator">
+                  {msgDate}
+                </div>
+              )}
+              <div
+                key={msg._id || msg.id || index}
+                className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${msg.warning ? "clickable" : ""}`}
+                onClick={() => openDetails(msg)}
+                title={msg.warning ? "לחצי כדי לראות פירוט אזהרה" : ""}
+                role={msg.warning ? "button" : undefined}
+                tabIndex={msg.warning ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (!msg.warning) return;
+                  if (e.key === "Enter" || e.key === " ") openDetails(msg);
+                }}
+              >
+                <div className="msg-row msg-text-row">
+                  {msg.warning && (
+                    <div className="warning-banner">
+                      🟡{" "}
+                      {msg.warning?.reason ||
+                        "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
+                      <span className="warning-hint"> (לחצי לפירוט)</span>
+                    </div>
+                  )}
+                  <div className="msg-text">{msg.text}</div>
+                </div>
 
-              <div className="msg-separator"></div>
-              <div className="msg-row msg-bottom-row">
-                <span className="msg-time">{formatTime(msg.createdAt)}</span>
-                <span className="msg-sender">{msg.sender || msg.username}</span>
+                <div className="msg-separator"></div>
+                <div className="msg-row msg-bottom-row">
+                  <span className="msg-time">{formatTime(msg.createdAt)}</span>
+                  <span className="msg-sender">{msg.sender || msg.username}</span>
+                </div>
               </div>
-            </div>
+            </>
           );
         })}
         <div ref={messagesEndRef} />
