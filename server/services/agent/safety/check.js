@@ -1,3 +1,5 @@
+// safety.service.js (or checkSafety.js)
+
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import { SAFETY_SYSTEM_PROMPT } from "./prompt.js";
@@ -12,10 +14,13 @@ const openai = new OpenAI({
 
 /**
  * Validates content for safety using OpenAI.
- * Returns null if safe, formatted error object if unsafe.
+ * Returns:
+ *  - null if safe
+ *  - { isSafe:true, warning, category } if safe but needs a warning (UI can surface)
+ *  - { isSafe:false, message, suggestedResponse, reason, category } if blocked
  *
  * @param {string} text - The text to analyze
- * @param {string} contextType - 'Chat' or 'Message' (for error messaging)
+ * @param {string} contextType - 'Chat' or 'Message'
  */
 export const checkSafety = async (text, contextType = "Message") => {
   console.time(`SafetyCheck-${contextType}`);
@@ -23,12 +28,13 @@ export const checkSafety = async (text, contextType = "Message") => {
   try {
     if (typeof text !== "string" || text.trim().length === 0) {
       console.timeEnd(`SafetyCheck-${contextType}`);
-      return null; // Empty content is safe
+      return null;
     }
 
-    // Local self-harm gate 
+    // Local self-harm gate (with prioritization handled inside checkSelfHarm)
     const selfHarmResult = checkSelfHarm(text, contextType);
 
+    // BLOCK
     if (selfHarmResult?.approved === false) {
       console.timeEnd(`SafetyCheck-${contextType}`);
       return {
@@ -40,6 +46,17 @@ export const checkSafety = async (text, contextType = "Message") => {
       };
     }
 
+    // ALLOW + WARNING (help-a-friend)
+    if (selfHarmResult?.ok === true && selfHarmResult.warning) {
+      console.timeEnd(`SafetyCheck-${contextType}`);
+      return {
+        isSafe: true,
+        warning: selfHarmResult.warning,
+        category: selfHarmResult.category,
+      };
+    }
+
+    // Otherwise, use LLM safety check
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
@@ -50,7 +67,9 @@ export const checkSafety = async (text, contextType = "Message") => {
       temperature: 0,
     });
 
-    const result = JSON.parse(completion.choices[0].message.content);
+    const raw = completion.choices?.[0]?.message?.content || "{}";
+    const result = JSON.parse(raw);
+
     console.timeEnd(`SafetyCheck-${contextType}`);
 
     if (!result.isSafe) {

@@ -1,43 +1,42 @@
-// - High-risk self-harm content => BLOCK with supportive guidance + ERAN contacts (Israel).
-// - General "help a friend" discussion => ALLOW but return a WARNING object (to be surfaced by your pipeline).
-
+// selfHarm.js
 
 const HIGH_RISK_PATTERNS = [
-  //direct self-harm intent/ideation
-  "kill myself",
-  "end my life",
-  "i want to die",
-  "i don't want to live",
-  "i cant go on",
-  "i can't go on",
-  "suicide",
-  "commit suicide",
-  "hurt myself",
-  "harm myself",
-  "self harm",
-  "self-harm",
-  "cut myself",
-  "i'm going to die",
-  "i am going to die",
-  "i want to kill myself",
-  "i wanna die",
-  "i wanna kill myself"
-
+  "אני רוצה להתאבד",
+  "רוצה להתאבד",
+  "בא לי להתאבד",
+  "אני הולכת להתאבד",
+  "אני הולך להתאבד",
+  "אני רוצה למות",
+  "רוצה למות",
+  "בא לי למות",
+  "לא רוצה לחיות",
+  "אין לי כוח לחיות",
+  "נמאס לי מהחיים",
+  "לשים קץ לחיים",
+  "לשים קץ לחיי",
+  "אני אשים קץ לחיי",
+  "אובדנות",
+  "מחשבות אובדניות",
+  "התאבדות",
+  "אני פוגע בעצמי",
+  "אני פוגעת בעצמי",
+  "אני חותך את עצמי",
+  "אני חותכת את עצמי",
 ];
 
 const GENERAL_HELP_FRIEND_PATTERNS = [
-  //helping a friend / general support
-  "how to help a friend",
-  "help a friend",
-  "my friend is depressed",
-  "my friend is suicidal",
-  "my friend wants to die",
-  "my friend self harms",
-  "my friend self-harms",
-  "friend wants to kill himself",
-  "friend wants to kill herself",
-  "what should i do if my friend"
-
+  "חברה שלי רוצה להתאבד",
+  "חבר שלי רוצה להתאבד",
+  "החברה שלי רוצה למות",
+  "החבר שלי רוצה למות",
+  "חברה שלי פוגעת בעצמה",
+  "חבר שלי פוגע בעצמו",
+  "איך לעזור לחברה שלי",
+  "איך לעזור לחבר שלי",
+  "מה לעשות אם חברה שלי",
+  "מה לעשות אם חבר שלי",
+  "אני דואגת לחברה שלי",
+  "אני דואג לחבר שלי",
 ];
 
 function normalize(text) {
@@ -47,69 +46,58 @@ function normalize(text) {
     .trim();
 }
 
-function includesAny(text, patterns) {
+const HIGH_RISK_PATTERNS_N = HIGH_RISK_PATTERNS.map(normalize);
+const HELP_FRIEND_PATTERNS_N = GENERAL_HELP_FRIEND_PATTERNS.map(normalize);
+
+function includesAny(text, patternsNormalized) {
   const t = normalize(text);
-  return patterns.some((p) => t.includes(p));
+  return patternsNormalized.some((p) => p && t.includes(p));
 }
 
-function buildEranGuidanceEnglish() {
-  // Per your request:
-  // - Recommend talking to a trusted adult/parents
-  // - Include ERAN 1201 (24/7, anonymous)
-  // - Include WhatsApp number 052-8451201 (no claim about 24/7 on WhatsApp)
+function buildEranGuidanceHebrew() {
   return (
-    "I’m really sorry you’re feeling this way. You don’t have to handle this alone.\n\n" +
-    "Please reach out to a trusted adult right now (a parent/guardian, teacher, school counselor, or another adult you trust). If you feel in immediate danger, call your local emergency number.\n\n" +
-    "In Israel, you can also contact ERAN (anonymous support):\n" +
-    "• ERAN hotline: 1201 (available 24/7)\n" +
-    "• ERAN WhatsApp: +972-52-845-1201"
+    "אני מצטער/ת שאת/ה מרגיש/ה ככה. את/ה לא צריך/ה להתמודד עם זה לבד.\n\n" +
+    "חשוב מאוד לפנות עכשיו למבוגר/ת אחראי/ת שאת/ה סומכ/ת עליו/ה – הורה, מורה, יועצ/ת בית ספר או בן משפחה.\n\n" +
+    "אם יש סכנה מיידית – פנה/י לשירותי החירום.\n\n" +
+    "בישראל ניתן לפנות גם לער״ן – תמיכה נפשית אנונימית:\n" +
+    "• קו טלפון: 1201 (24/7)\n" +
+    "• וואטסאפ: ‎+972-52-845-1201"
   );
 }
 
-function buildHelpFriendWarningEnglish() {
+function buildHelpFriendWarningHebrew() {
   return (
-    "This topic can be serious. If your friend might be in danger right now, involve a trusted adult immediately " +
-    "(their parent/guardian, a teacher, or a school counselor). If there is immediate risk, contact local emergency services.\n\n" +
-    "In Israel, ERAN can help anonymously:\n" +
+    "אני שומע/ת שאת/ה דואג/ת לחבר/ה שלך – זה חשוב שלא תישאר/י עם זה לבד.\n\n" +
+    "הכי נכון עכשיו זה לערב מבוגר/ת אחראי/ת מיד (הורה, יועצ/ת, מורה, קרוב משפחה) ולספר בדיוק מה שמדאיג אותך.\n" +
+    "אם יש סכנה מיידית – פנו לשירותי החירום.\n\n" +
+    "אפשר גם לפנות לער״ן להתייעצות ותמיכה:\n" +
     "• 1201 (24/7)\n" +
-    "• WhatsApp: +972-52-845-1201"
+    "• וואטסאפ: ‎+972-52-845-1201"
   );
 }
 
-/**
- * Detect and handle self-harm related content.
- *
- * @param {string} text
- * @param {string} contextType
- * @returns {object|null}
- *  - BLOCK: { approved:false, message, category, reason, suggestedFix, confidence, contextType }
- *  - ALLOW+WARNING: { ok:true, warning, category }
- *  - null if not relevant
- */
 export function checkSelfHarm(text, contextType = "Message") {
   if (!text || typeof text !== "string") return null;
 
-  const highRisk = includesAny(text, HIGH_RISK_PATTERNS);
-  if (highRisk) {
-    return {
-      approved: false,
-      message: "Message blocked by Safety Agent",
-      category: "Self-Harm/Suicide",
-      reason:
-        "The message indicates possible self-harm/suicidality. This requires immediate safe support and must not be published.",
-      suggestedFix: buildEranGuidanceEnglish(),
-      confidence: 0.97,
-      contextType,
-    };
-  }
-
-  const helpFriend = includesAny(text, GENERAL_HELP_FRIEND_PATTERNS);
+  const helpFriend = includesAny(text, HELP_FRIEND_PATTERNS_N);
   if (helpFriend) {
-    // Publishable, but with a warning.
     return {
       ok: true,
       category: "Self-Harm/Suicide",
-      warning: buildHelpFriendWarningEnglish(),
+      warning: buildHelpFriendWarningHebrew(),
+    };
+  }
+
+  const highRisk = includesAny(text, HIGH_RISK_PATTERNS_N);
+  if (highRisk) {
+    return {
+      approved: false,
+      message: "ההודעה נחסמה מטעמי בטיחות",
+      category: "Self-Harm/Suicide",
+      reason: "זוהתה אינדיקציה לפגיעה עצמית או אובדנות.",
+      suggestedFix: buildEranGuidanceHebrew(),
+      confidence: 0.97,
+      contextType,
     };
   }
 
