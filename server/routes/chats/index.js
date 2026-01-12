@@ -37,7 +37,10 @@ router.post("/", verifyToken, async (req, res) => {
     // 1) Safety + Verification (BLOCK/WARN/APPROVE)
     const combinedText = `${title}\n${content}`;
     const check = await handleSafetyCheck(res, combinedText, "Chat");
+    if (!check) console.log("[ROUTE] Chat creation blocked by safety, check: ", check);
     if (!check) return; // blocked (response already sent)
+    console.log("[ROUTE] Chat creation passed safety check.");
+    console.log("[ROUTE] Reference info:", check.reference);
 
     // 2) Add to DB
     const newChat = await dbService.createChat({ title, content, username });

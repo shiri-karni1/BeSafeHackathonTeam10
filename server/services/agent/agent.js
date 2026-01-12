@@ -26,6 +26,7 @@ export const validateMessage = async ({ text, contextType = 'Message' }) => {
   }
   if (contextType === "Chat") // dont run verification on chats
   {
+    console.log("[AGENT] ✅ Approved (no verification on Chat)");
     return safetyResult;
   }
 
