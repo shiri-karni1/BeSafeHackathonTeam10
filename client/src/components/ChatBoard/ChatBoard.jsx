@@ -186,7 +186,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
       `ℹ️ פרטי התראה\n` +
       `הודעה: ${msg.text}\n\n` +
       (ref.category ? `קטגוריה: ${ref.category}\n` : "") +
-      (ref.reason ? `סיבה: ${ref.reason}` : "");
+      (ref.additionalInfo ? `סיבה: ${ref.additionalInfo}` : "");
 
     console.log("[FRONTEND] Details text to show:", detailsText);
     setToast({ type: severity, text: detailsText });
