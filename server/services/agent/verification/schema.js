@@ -1,4 +1,4 @@
-import { createBaseSchema, VERIFICATION_CATEGORIES } from "../baseSchema.js";
+import { createBaseSchema, VERIFICATION_CATEGORIES } from "../baseResponseSchema.js";
 
 export const VERIFICATION_SCHEMA = createBaseSchema(
   "answer_verification",
