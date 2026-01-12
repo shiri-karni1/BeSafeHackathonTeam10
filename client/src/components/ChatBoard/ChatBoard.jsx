@@ -266,10 +266,10 @@ const ChatBoard = ({ roomId, currentUser }) => {
 
       <div className="input-container">
         <div className="input-box">
-          <textarea
+          <input 
+            type="text"
             placeholder="אני חושבת ש..."
             value={inputValue}
-            rows="2"
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
