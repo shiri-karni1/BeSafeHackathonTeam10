@@ -11,10 +11,11 @@ import { checkVerification } from "./verification/checkAll.js";
  *          { isSafe: false, ... } if blocked by safety,
  *          { ok: true, reference: {...} } if approved with reference info
  */
-export const validateMessage = async ({ text, contextType = 'Message' }) => {
+export const validateMessage = async ({ text, contextType = 'Message', question = null }) => {
   console.log("\n[AGENT] ===== Starting validation =====");
   console.log("[AGENT] Text:", text);
   console.log("[AGENT] Context:", contextType);
+  console.log("[AGENT] Question:", question?.substring(0, 100) || "none");
   
   // 1) Safety check (blocks unsafe content)
   const safetyResult = await checkSafety(text, contextType);
@@ -32,7 +33,7 @@ export const validateMessage = async ({ text, contextType = 'Message' }) => {
 
   // 2) Verification check (attaches reference/clarification info if needed)
   const verificationResult = await checkVerification({
-    question: contextType || "Content",
+    question: question || "General conversation",
     answer: text,
   });
   
