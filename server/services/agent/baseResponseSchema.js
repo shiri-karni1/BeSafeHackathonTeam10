@@ -17,7 +17,6 @@ export const SAFETY_CATEGORIES = [
 
 // Verification categories
 export const VERIFICATION_CATEGORIES = [
-  "Accurate",
   "Contradicts Trusted Source",
   "Not Supported by Trusted Source",
   "Potentially Harmful Medical Advice",
