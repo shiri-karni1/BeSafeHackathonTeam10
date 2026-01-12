@@ -21,16 +21,19 @@
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
+    padding: 0 20px;
+
 }
 
 .subtitle {
     font-size: 1rem;
     margin-bottom: 0;
+    padding: 0 20px;
 }
 
 .onboardingImage {
-    width: 450px;
-    height: 450px;
+    max-width: 450px;
+    max-height: 450px;
     align-self: center ;
 }
 
@@ -40,7 +43,7 @@
 }
 
 .nextButton {
-    background-color: #823270;
+    background-color: #9B718F;
     color: white;
     border: none;
     padding: 10px 5px;
