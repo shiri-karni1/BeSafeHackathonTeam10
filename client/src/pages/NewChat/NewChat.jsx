@@ -12,13 +12,16 @@ const getSafetyCategory = (data) => {
 
 const buildBlockText = (data) => {
   const lines = [];
-
   lines.push("השאלה נחסמה");
-
+  if (data?.category==Self-Harm/Suicide){
+     if (data?.category) lines.push(`קטגוריה: ${data.category}`);
+     if (data?.reason) lines.push(`סיבה: ${data.reason}`);
+      if (data?.suggestedResponse) lines.push(`התייחסות: ${data.suggestedResponse}`);
+  }else{
   if (data?.category) lines.push(`קטגוריה: ${data.category}`);
   if (data?.reason) lines.push(`סיבה: ${data.reason}`);
   if (data?.suggestedResponse) lines.push(`הצעת ניסוח: ${data.suggestedResponse}`);
-
+  }
   return lines.join("\n");
 };
 
