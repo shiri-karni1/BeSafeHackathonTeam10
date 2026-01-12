@@ -24,6 +24,10 @@ export const validateMessage = async ({ text, contextType = 'Message' }) => {
     console.log("[AGENT] ❌ BLOCKED by safety");
     return safetyResult; // BLOCKED
   }
+  if (contextType === "Chat")
+  {
+    return safetyResult;
+  }
 
   // 2) Verification check (attaches reference/clarification info if needed)
   const verificationResult = await checkVerification({
