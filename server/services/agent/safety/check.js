@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import OpenAI from "openai";
 import { SAFETY_SYSTEM_PROMPT } from "./prompt.js";
 import { SAFETY_RESULT_SCHEMA } from "./responseSchema.js";
+import { checkSelfHarm } from "./selfHarm.js";
 
 dotenv.config();
 
@@ -12,17 +13,31 @@ const openai = new OpenAI({
 /**
  * Validates content for safety using OpenAI.
  * Returns null if safe, formatted error object if unsafe.
- * 
+ *
  * @param {string} text - The text to analyze
  * @param {string} contextType - 'Chat' or 'Message' (for error messaging)
  */
-export const checkSafety = async (text, contextType = 'Message') => {
+export const checkSafety = async (text, contextType = "Message") => {
   console.time(`SafetyCheck-${contextType}`);
-  
+
   try {
     if (typeof text !== "string" || text.trim().length === 0) {
       console.timeEnd(`SafetyCheck-${contextType}`);
       return null; // Empty content is safe
+    }
+
+    // Local self-harm gate 
+    const selfHarmResult = checkSelfHarm(text, contextType);
+
+    if (selfHarmResult?.approved === false) {
+      console.timeEnd(`SafetyCheck-${contextType}`);
+      return {
+        isSafe: false,
+        message: `${contextType} blocked by Safety Agent`,
+        suggestedResponse: selfHarmResult.suggestedFix,
+        reason: selfHarmResult.reason,
+        category: selfHarmResult.category,
+      };
     }
 
     const completion = await openai.chat.completions.create({
@@ -44,7 +59,7 @@ export const checkSafety = async (text, contextType = 'Message') => {
         message: `${contextType} blocked by Safety Agent`,
         suggestedResponse: result.suggestedResponse,
         reason: result.reason,
-        category: result.category
+        category: result.category,
       };
     }
 
@@ -55,7 +70,8 @@ export const checkSafety = async (text, contextType = 'Message') => {
     return {
       isSafe: false,
       message: `${contextType} blocked by Safety Agent`,
-      suggestedResponse: "Our safety system is currently unavailable. Your message could not be sent. Please try again later.",
+      suggestedResponse:
+        "Our safety system is currently unavailable. Your message could not be sent. Please try again later.",
       reason: "Safety Service Error",
       category: "Error",
     };
