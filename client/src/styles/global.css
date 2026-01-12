@@ -354,21 +354,63 @@ code {
 }
 
 .toast-info {
-  background: #e8f5e9;
-  color: #1b5e20;
-  border-color: #66bb6a;
+  background: #fff8e1 !important;
+  color: #6d4c00 !important;
+  border-color: #f9a825 !important;
 }
 
-/* 🟢 Green toast for allow messages */
-.toast-allow {
-  background: #e8f5e9;
-  color: #1b5e20;
-  border-color: #2e7d32;
+.newchat-toast.toast-block {
+  position: fixed;
+  top: 24px;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100vw - 64px);
+  max-width: 720px;
+  padding: 22px 28px 14px;
+  border-radius: 20px;
+  text-align: center;
+  background: #ffe9ea;
+  color: #8a1f1f;
+  border: 1px solid #ef9a9a;
+  box-shadow: 0 14px 38px rgba(0,0,0,0.22);
+  z-index: 999;
 }
 
-/* 🟠 Orange toast for reference messages */
-.toast-reference {
-  background: #fff3e0;
-  color: #e65100;
-  border-color: #ff9800;
+.newchat-toast.toast-block .toast-text {
+  margin: 0 auto;
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.newchat-toast.toast-block .toast-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.newchat-toast.toast-block .toast-close:hover {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .newchat-toast.toast-block {
+    top: 16px;
+    width: calc(100vw - 80px);
+    padding: 18px 18px 12px;
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .newchat-toast.toast-block .toast-text {
+    font-size: 15px;
+  }
 }
