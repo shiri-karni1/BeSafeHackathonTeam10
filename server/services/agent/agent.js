@@ -24,8 +24,9 @@ export const validateMessage = async ({ text, contextType = 'Message' }) => {
     console.log("[AGENT] ❌ BLOCKED by safety");
     return safetyResult; // BLOCKED
   }
-  if (contextType === "Chat")
+  if (contextType === "Chat") // dont run verification on chats
   {
+    console.log("[AGENT] ✅ Approved (no verification on Chat)");
     return safetyResult;
   }
 
