@@ -257,7 +257,7 @@ code {
 }
 
 .input-container textarea {
-    width: 50%;
+    width: 70%;
     max-width: 700px;
     padding: 12px 60px 12px 15px;
     border: 2px solid #ddd;
@@ -291,7 +291,7 @@ code {
     justify-content: center;
     transition: background-color 0.3s;
     position: absolute;
-    left: 18%;
+    left: 10%;
     top: 50%;
     transform: translateY(-50%);
     z-index: 1001;
@@ -309,8 +309,17 @@ code {
   align-items: flex-start;
   gap: 10px;
 
-  width: fit-content;        /* ✅ לפי הטקסט */
-  max-width: min(700px, 92vw);
+  width: 80%;        /* ✅ לפי הטקסט */
+  max-width: min(700px, 98vw);
+  @media (max-width: 600px) {
+    .toast {
+      max-width: 100vw;
+      width: 100vw;
+      left: 0;
+      transform: none;
+      border-radius: 0 0 12px 12px;
+    }
+  }
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.12);
@@ -356,18 +365,26 @@ code {
   background: #fff8e1;
   color: #6d4c00;
   border-color: #f9a825;
+  min-width: 220px;
+  max-width: 90vw;
+  width: fit-content;
 }
 
+.toast-reference {
+  background: #fff8e1;
+  color: #6d4c00;
+  border-color: #f9a825;
+}
 
 /* 🟢 Green toast for allow messages */
-.toast-allow {
+/* .toast-allow {
   background: #e8f5e9;
   color: #1b5e20;
   border-color: #2e7d32;
   background: #fff8e1 !important;
   color: #6d4c00 !important;
   border-color: #f9a825 !important;
-}
+} */
 
 .newchat-toast.toast-block {
   position: fixed;
