@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import { SAFETY_SYSTEM_PROMPT } from "./prompt.js";
-import { SAFETY_RESULT_SCHEMA } from "./schema.js";
+import { SAFETY_RESULT_SCHEMA } from "./responseSchema.js";
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ export const checkSafety = async (text, contextType = 'Message') => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-mini",
       messages: [
         { role: "system", content: SAFETY_SYSTEM_PROMPT },
         { role: "user", content: text },
@@ -42,7 +42,7 @@ export const checkSafety = async (text, contextType = 'Message') => {
       return {
         isSafe: false,
         message: `${contextType} blocked by Safety Agent`,
-        feedback: result.feedback,
+        suggestedResponse: result.suggestedResponse,
         reason: result.reason,
         category: result.category
       };
@@ -55,7 +55,7 @@ export const checkSafety = async (text, contextType = 'Message') => {
     return {
       isSafe: false,
       message: `${contextType} blocked by Safety Agent`,
-      feedback: "Our safety system is currently unavailable. Your message could not be sent. Please try again later.",
+      suggestedResponse: "Our safety system is currently unavailable. Your message could not be sent. Please try again later.",
       reason: "Safety Service Error",
       category: "Error",
     };

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import { VERIFICATION_SYSTEM_PROMPT } from "./prompt.js";
-import { VERIFICATION_SCHEMA } from "./schema.js";
+import { VERIFICATION_SCHEMA } from "./responseSchema.js";
 
 dotenv.config();
 
@@ -52,7 +52,7 @@ Task:
 `.trim();
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-mini",
       messages: [
         { role: "system", content: VERIFICATION_SYSTEM_PROMPT },
         { role: "user", content: userInput },

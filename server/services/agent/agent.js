@@ -3,35 +3,46 @@ import { checkVerification } from "./verification/checkAll.js";
 
 /**
  * Unified content validation agent.
- * Runs both safety and verification checks.
+ * Flow matches diagram:
+ * 1) Safety check - BLOCKS if unsafe (isSafe = false)
+ * 2) Verification check - ATTACHES reference info if needed (shouldAttachInfo = true)
  * 
- * @returns null if approved, or error object with details if blocked/warned
+ * @returns null if approved with no info, 
+ *          { isSafe: false, ... } if blocked by safety,
+ *          { ok: true, reference: {...} } if approved with reference info
  */
 export const validateMessage = async ({ text, contextType = 'Message' }) => {
-  // 1) Safety check (blocks unsafe content) safetyError is null if safe
-  const safetyError = await checkSafety(text, contextType);
-  if (safetyError) {
-    return safetyError;
+  console.log("\n[AGENT] ===== Starting validation =====");
+  console.log("[AGENT] Text:", text);
+  console.log("[AGENT] Context:", contextType);
+  
+  // 1) Safety check (blocks unsafe content)
+  const safetyResult = await checkSafety(text, contextType);
+  console.log("[AGENT] Safety result:", safetyResult ? { isSafe: safetyResult.isSafe, category: safetyResult.category } : "null (safe)");
+  
+  if (safetyResult && !safetyResult.isSafe) { 
+    console.log("[AGENT] ❌ BLOCKED by safety");
+    return safetyResult; // BLOCKED
   }
 
-  // 2) Verification check (blocks contradictions, warns on risky topics)
-  const verification = await checkVerification({
+  // 2) Verification check (attaches reference/clarification info if needed)
+  const verificationResult = await checkVerification({
     question: contextType || "Content",
     answer: text,
   });
+  
+  console.log("[AGENT] Verification result:", verificationResult ? "Has reference" : "null (no reference)");
 
-  if (verification) {
-    if (verification.approved === false) {
-      // Blocked by verification
-      return verification;
-    }
-
-    if (verification.approved === true && verification.warning) {
-      // Approved but with warning
-      return { ok: true, warning: verification.warning };
-    }
+  if (verificationResult) {
+    console.log("[AGENT] ✅ Approved with reference");
+    // Has reference info to attach
+    return { 
+      ok: true, 
+      reference: verificationResult 
+    };
   }
 
-  // Fully approved
+  console.log("[AGENT] ✅ Approved (no reference)");
+  // Fully approved, no additional info needed
   return null;
 };

@@ -6,26 +6,37 @@ export const sendChatNotFound = (res) =>
 
 /**
  * handleSafetyCheck validates content through unified agent.
- * - BLOCK        => returns null (and sends response)
- * - WARN         => returns { ok:true, warning:{...} }
- * - APPROVE      => returns { ok:true, warning:null }
+ * - BLOCK        => returns null (and sends response with shouldBlock=true)
+ * - ATTACH INFO  => returns { ok:true, reference:{...} }
+ * - APPROVE      => returns { ok:true, reference:null }
  */
 export const handleSafetyCheck = async (res, text, contextType) => {
   const result = await validateMessage({ text, contextType });
 
-  // null = approved
+  // null = approved, no additional info
   if (!result) {
-    return { ok: true, warning: null };
+    return { ok: true, reference: null };
   }
 
-  // Has warning but approved
-  if (result.ok && result.warning) {
+  // Has reference info but approved
+  if (result.ok && result.reference) {
     return result;
   }
 
-  // Blocked (safety or verification)
-  const status = result.isSafe === false ? 200 : 400;
-  res.status(status).json(result);
+  // Blocked by safety check
+  if (result.isSafe === false) {
+    res.status(200).json(result);
+    return null;
+  }
+
+  // Unexpected result format
+  res.status(500).json({ 
+    isSafe: false,
+    message: "Internal validation error",
+    suggestedResponse: "An error occurred while processing your message. Please try again.",
+    reason: "Unexpected validation result",
+    category: "Error"
+  });
   return null;
 };
 

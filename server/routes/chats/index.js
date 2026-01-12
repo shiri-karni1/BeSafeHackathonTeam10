@@ -45,11 +45,10 @@ router.post("/", verifyToken, async (req, res) => {
     // (Optional) Notify main lobby that a new chat was created
     // socketService.notifyChatRoom(req.io, "lobby", "new_chat", newChat);
 
-    // 3) Respond with new chat (+ optional warning)
+    // 3) Respond with new chat (+ optional reference info)
     res.status(201).json({
       ...newChat.toObject(),
-      isSafe: true,
-      warning: check.warning, // null or {...}
+      reference: check.reference, // null or {...}
     });
   } catch (error) {
     handleError(res, error);
@@ -67,13 +66,13 @@ router.post("/:id/messages", verifyToken, async (req, res) => {
     if (!check) return; // blocked (response already sent)
 
     // 2) Add to DB
-    const savedMessage = await dbService.addMessageToChat(id, text, username, check.warning);
+    const savedMessage = await dbService.addMessageToChat(id, text, username, check.reference);
     if (!savedMessage) return sendChatNotFound(res);
 
-    // 3) Build payload with warning so EVERYONE (socket + sender) gets it
+    // 3) Build payload with reference info so EVERYONE (socket + sender) gets it
     const payload = {
       ...(savedMessage.toObject ? savedMessage.toObject() : savedMessage),
-      warning: check.warning, // 🟡 null if no warning
+      reference: check.reference, // null if no additional info
     };
 
     // 4) Socket Call (send payload, not savedMessage)
@@ -87,3 +86,4 @@ router.post("/:id/messages", verifyToken, async (req, res) => {
 });
 
 export default router;
+

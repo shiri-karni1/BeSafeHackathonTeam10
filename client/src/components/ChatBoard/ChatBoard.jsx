@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-// Formats a date to "DD/MM/YY" in Hebrew locale
+import socketService from "../SocketFactory/SocketFactory";
+import PropTypes from "prop-types";
+import SendIcon from "@mui/icons-material/Send";
+import api from "../../services/axios.js";
+
+// ===== Date/Time Formatting =====
 const formatDate = (date) => {
   if (!date) return "";
   const d = new Date(date);
@@ -10,10 +15,6 @@ const formatDate = (date) => {
     year: "2-digit",
   });
 };
-import socketService from "../SocketFactory/SocketFactory";
-import PropTypes from "prop-types";
-import SendIcon from "@mui/icons-material/Send";
-import api from "../../services/axios.js";
 
 const formatTime = (date) => {
   if (!date) return "";
@@ -22,7 +23,11 @@ const formatTime = (date) => {
   return d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
 };
 
-// Builds a consistent message for BLOCK/WARN responses (supports string or object payloads)
+// ===== Message Helpers =====
+
+// ===== Message Helpers =====
+
+// Builds a consistent message for BLOCK responses
 const buildPreciseReason = (obj) => {
   if (!obj) {
     return `ההודעה נחסמה\nסיבה: לא התקבלה סיבה מהשרת\nהצעת ניסוח:`;
@@ -32,22 +37,28 @@ const buildPreciseReason = (obj) => {
   }
 
   const reason = obj.reason || obj.message || "לא התקבלה סיבה מהשרת";
-  const suggestion = obj.feedback || obj.suggestedFix || "";
+  const suggestion = obj.suggestedResponse || "";
 
   return `ההודעה נחסמה\nסיבה: ${reason}\nהצעת ניסוח: ${suggestion}`;
 };
 
-// Normalizes warning payload shape to a single consistent object
-const normalizeWarning = (warning) => {
-  if (!warning) return null;
-  if (warning.warning) return warning.warning;
-  return warning;
+// Normalizes reference payload shape (just pass through, structure is already correct)
+const normalizeReference = (reference) => {
+  return reference || null;
 };
 
+// Determines message severity for styling
 const getMsgSeverity = (msg) => {
-  if (msg?.warning) return "warn";
-  return "allow";
+  const severity = msg?.reference ? "reference" : "allow";
+  console.log("[FRONTEND] Message severity:", {
+    text: msg.text?.substring(0, 30),
+    hasReference: !!msg.reference,
+    severity
+  });
+  return severity;
 };
+
+// ===== Main Component =====
 
 const ChatBoard = ({ roomId, currentUser }) => {
   const [messages, setMessages] = useState([]);
@@ -69,7 +80,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
         const msgs = data?.messages || [];
         const history = msgs.map((msg) => ({
           ...msg,
-          warning: normalizeWarning(msg.warning),
+          reference: normalizeReference(msg.reference),
           isMine: (msg.sender || msg.username) === currentUser?.name,
         }));
 
@@ -86,6 +97,11 @@ const ChatBoard = ({ roomId, currentUser }) => {
 
   useEffect(() => {
     const handleReceiveMessage = (data) => {
+      console.log("[FRONTEND] Received socket message:", {
+        text: data.text?.substring(0, 30),
+        hasReference: !!data.reference,
+        reference: data.reference
+      });
       setMessages((prev) => {
         // De-dupe by _id to avoid duplicates between REST + socket delivery
         if (data?._id && prev.some((m) => m._id === data._id)) return prev;
@@ -94,7 +110,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
           ...prev,
           {
             ...data,
-            warning: normalizeWarning(data.warning),
+            reference: normalizeReference(data.reference),
             isMine: (data.sender || data.username) === currentUser?.name,
           },
         ];
@@ -130,10 +146,11 @@ const ChatBoard = ({ roomId, currentUser }) => {
         return;
       }
 
-      // Show warning toast (does not block sending)
-      const warning = normalizeWarning(body?.warning);
-      if (warning) {
-        setToast({ type: "warn", text: `🟡 ${buildPreciseReason(warning)}` });
+      // Show reference toast (does not block sending)
+      const reference = normalizeReference(body?.reference);
+      if (reference) {
+        const refText = reference.additionalInfo || "מידע נוסף צורף להודעה";
+        setToast({ type: "info", text: `ℹ️ ${refText}` });
       }
 
       // Optimistic append if socket hasn't delivered it yet
@@ -144,7 +161,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
             ...prev,
             {
               ...body,
-              warning: normalizeWarning(body.warning),
+              reference: normalizeReference(body.reference),
               isMine: true,
             },
           ];
@@ -157,16 +174,22 @@ const ChatBoard = ({ roomId, currentUser }) => {
     }
   };
 
-  // Clicking a warning message opens the "details" as a toast (same UI as normal warn/block)
+  // Clicking a reference message opens the "details" as a toast
   const openDetails = (msg) => {
-    if (!msg?.warning) return;
+    if (!msg?.reference) return;
 
+    console.log("[FRONTEND] Opening details for reference:", msg.reference);
+
+    const ref = msg.reference;
+    const severity = getMsgSeverity(msg); // Get the same severity as the message bubble
     const detailsText =
-      `🟡 פירוט אזהרה (AI)\n` +
+      `ℹ️ פרטי התראה\n` +
       `הודעה: ${msg.text}\n\n` +
-      buildPreciseReason(msg.warning);
+      (ref.category ? `קטגוריה: ${ref.category}\n` : "") +
+      (ref.reason ? `סיבה: ${ref.reason}` : "");
 
-    setToast({ type: "warn", text: detailsText });
+    console.log("[FRONTEND] Details text to show:", detailsText);
+    setToast({ type: severity, text: detailsText });
   };
 
 
@@ -187,23 +210,23 @@ const ChatBoard = ({ roomId, currentUser }) => {
               )}
               <div
                 key={msg._id || msg.id || index}
-                className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${msg.warning ? "clickable" : ""}`}
+                className={`bubble ${msg.isMine ? "mine" : "theirs"} ${severity} ${msg.reference ? "clickable" : ""}`}
                 onClick={() => openDetails(msg)}
-                title={msg.warning ? "לחצי כדי לראות פירוט אזהרה" : ""}
-                role={msg.warning ? "button" : undefined}
-                tabIndex={msg.warning ? 0 : undefined}
+                title={msg.reference ? "לחצי כדי לראות מידע נוסף" : ""}
+                role={msg.reference ? "button" : undefined}
+                tabIndex={msg.reference ? 0 : undefined}
                 onKeyDown={(e) => {
-                  if (!msg.warning) return;
+                  if (!msg.reference) return;
                   if (e.key === "Enter" || e.key === " ") openDetails(msg);
                 }}
               >
                 <div className="msg-row msg-text-row">
-                  {msg.warning && (
-                    <div className="warning-banner">
-                      🟡{" "}
-                      {msg.warning?.reason ||
-                        "אזהרה: ייתכן שהתוכן לא מדויק / לא מבוסס"}
-                      <span className="warning-hint"> (לחצי לפירוט)</span>
+                  {msg.reference && (
+                    <div className="reference-banner">
+                      ℹ️{" "}
+                      {msg.reference?.additionalInfo ||
+                        "מידע נוסף ממקורות מהימנים"}
+                      <span className="reference-hint"> (לחצי לפירוט)</span>
                     </div>
                   )}
                   <div className="msg-text">{msg.text}</div>

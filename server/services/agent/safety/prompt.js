@@ -59,7 +59,7 @@ Decision rule (must follow):
 
 If the message is safe:
 - isSafe=true
-- feedback=null
+- suggestedResponse=null
 - reason=null
 - category="Safe"
 
@@ -67,7 +67,7 @@ If unsafe:
 - isSafe=false
 - category=best match from the enum list
 - reason=short reason
-- feedback=gentle supportive alternative (what they can ask instead / safer direction)
+- suggestedResponse=gentle supportive alternative (what they can ask instead / safer direction)
 
 Return JSON only.
 `.trim();

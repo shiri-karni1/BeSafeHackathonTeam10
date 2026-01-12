@@ -1,17 +1,19 @@
 import { checkAnswerAgainstSource } from "./checkSingle.js";
-import { WARNING_CATEGORIES } from "./warnings.js";
 import { getAllSources, sourceToText } from "./sources.js";
 
 /**
  * Public API: Verifies an answer against all trusted sources.
- * Returns null if approved, formatted result if blocked/warned.
+ * Returns null if no additional info needed, or reference info to attach.
  * 
+ * NEVER blocks content - only attaches clarification/reference info.
  * Checks all sources in parallel for performance.
  */
 export const checkVerification = async ({ question, answer }) => {
   console.time("VerificationCheck");
+  console.log("[VERIFICATION] Starting check for:", { question, answer });
 
   const allSources = getAllSources();
+  console.log("[VERIFICATION] Checking against", allSources.length, "sources");
 
   // Check all sources in parallel
   const results = await Promise.all(
@@ -22,70 +24,41 @@ export const checkVerification = async ({ question, answer }) => {
         answer,
         trustedSourceText: trustedText,
       });
+      console.log(`[VERIFICATION] Source ${source.name}:`, {
+        shouldAttachReference: result?.shouldAttachReference,
+        category: result?.category,
+        additionalInfo: result?.additionalInfo?.substring(0, 50)
+      });
       return { result, source };
     })
   );
 
-  // Check for blocks first (contradictions)
+  // Check if OpenAI wants to attach a reference
   for (const { result, source } of results) {
-    const isRelevant = result?.isRelevant === true;
-
-    if (
-      isRelevant &&
-      result?.approve === false &&
-      (result?.category === "Contradicts Trusted Source" ||
-      result?.category === "Potentially Harmful Medical Advice")
-    ) {
+    if (result?.shouldAttachReference === true) {
+      console.log("[VERIFICATION] ✅ Attaching reference from:", source.name);
       console.timeEnd("VerificationCheck");
-      return buildRejection(result, source);
+      return buildReferenceInfo(result, source);
     }
   }
 
-  // Then check for warnings
-  for (const { result } of results) {
-    const isRelevant = result?.isRelevant === true;
-
-    if (isRelevant && WARNING_CATEGORIES.has(result?.category)) {
-      console.timeEnd("VerificationCheck");
-      return buildWarning(result);
-    }
-  }
-
+  console.log("[VERIFICATION] ❌ No reference attached");
   console.timeEnd("VerificationCheck");
   return null;
 };
 
-function buildRejection(result, source) {
+function buildReferenceInfo(result, source) {
   return {
-    approved: false,
-    message: "Answer rejected by Verification Agent",
+    isSafe: true,
+    message: "Additional reference info attached",
     category: result.category,
     reason: result.reason,
-    suggestedFix: result.suggestedFix,
-    confidence: result.confidence,
-    source: source
-      ? {
-          name: source.name ?? source.sourceName ?? null,
-          url: source.url,
-          id: source.id,
-        }
-      : null,
-  };
-}
-
-function buildWarning(result) {
-  return {
-    approved: true,
-    message: "Answer published with warning",
-    category: result.category,
-    reason: result.reason,
-    suggestedFix: result.suggestedFix,
-    confidence: result.confidence,
-    warning: {
-      category: result.category,
-      reason: result.reason,
-      suggestedFix: result.suggestedFix,
+    additionalInfo: result.additionalInfo,
+    reference: {
+      name: source.name ?? source.sourceName ?? null,
+      url: source.url,
+      id: source.id,
+      note: result.referenceNote,
     },
-    source: null,
   };
 }

@@ -36,7 +36,7 @@ export const createChat = async (chatData) => {
 /**
  * Add a message to a chat
  */
-export const addMessageToChat = async (chatId, text, username, warning=null) => {
+export const addMessageToChat = async (chatId, text, username, reference=null) => {
   if (!mongoose.Types.ObjectId.isValid(chatId)) return null;
 
   // Check if user exists
@@ -51,9 +51,7 @@ export const addMessageToChat = async (chatId, text, username, warning=null) => 
   const messageData = {
     text,
     username,
-    isSafe: true,
-    feedback: null,
-    warning: warning
+    reference: reference
   };
 
   chat.messages.push(messageData);
