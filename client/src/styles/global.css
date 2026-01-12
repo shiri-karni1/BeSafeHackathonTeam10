@@ -99,7 +99,6 @@
   }
 }
 html, body, #root, .app, .chat-board {
-  height: 100vh;
   margin: 0;
   padding: 0;
 }
@@ -109,6 +108,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #FBF8F8;
+    margin: 0;
 }
 
 code {
