@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import OpenAI from "openai";
 import { SAFETY_SYSTEM_PROMPT } from "./prompt.js";
 import { SAFETY_RESULT_SCHEMA } from "./responseSchema.js";
-import { checkSelfHarm } from "./selfHarm.js";
 
 dotenv.config();
 
@@ -31,32 +30,7 @@ export const checkSafety = async (text, contextType = "Message") => {
       return null;
     }
 
-    // Local self-harm gate (with prioritization handled inside checkSelfHarm)
-    const selfHarmResult = checkSelfHarm(text, contextType);
-
-    // BLOCK
-    if (selfHarmResult?.approved === false) {
-      console.timeEnd(`SafetyCheck-${contextType}`);
-      return {
-        isSafe: false,
-        message: `${contextType} blocked by Safety Agent`,
-        suggestedResponse: selfHarmResult.suggestedFix,
-        reason: selfHarmResult.reason,
-        category: selfHarmResult.category,
-      };
-    }
-
-    // ALLOW + WARNING (help-a-friend)
-    if (selfHarmResult?.ok === true && selfHarmResult.warning) {
-      console.timeEnd(`SafetyCheck-${contextType}`);
-      return {
-        isSafe: true,
-        warning: selfHarmResult.warning,
-        category: selfHarmResult.category,
-      };
-    }
-
-    // Otherwise, use LLM safety check
+    //use LLM safety check
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
