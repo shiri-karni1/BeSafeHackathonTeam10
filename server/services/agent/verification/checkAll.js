@@ -49,11 +49,7 @@ export const checkVerification = async ({ question, answer }) => {
 
 function buildReferenceInfo(result, source) {
   return {
-    isSafe: true,
-    message: "Additional reference info attached",
-    category: result.category,
-    reason: result.reason,
-    additionalInfo: result.additionalInfo,
+    ...result,  // Spread all OpenAI fields: isSafe, category, reason, additionalInfo, shouldAttachReference, referenceNote
     reference: {
       name: source.name ?? source.sourceName ?? null,
       url: source.url,
