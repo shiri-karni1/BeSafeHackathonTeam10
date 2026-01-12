@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import AppError from '../../utils/AppError.js';
 
 // Generate JWT token for a user
 export const generateToken = (id) => {

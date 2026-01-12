@@ -1,5 +1,5 @@
 // testWarnings.js
-import { checkVerification } from "./services/agents/verification/verification.service.js";
+import { checkVerification } from "./services/agent/verification/checkAll.js";
 
 function printResult(title, res) {
   console.log(`\n=== ${title} ===`);
