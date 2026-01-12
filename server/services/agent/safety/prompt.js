@@ -75,7 +75,7 @@ If unsafe:
 - isSafe=false
 - category=best match from the enum list
 - reason=short reason
-- suggestedResponse=gentle supportive alternative (what they can ask instead / safer direction)
+- suggestedResponse=gentle supportive alternative (what they can ask instead / safer direction) ANSWER IN HEBREW
 
 Return JSON only.
 `.trim();
