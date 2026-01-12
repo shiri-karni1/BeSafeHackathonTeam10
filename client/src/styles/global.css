@@ -352,12 +352,12 @@ code {
   color: #6d4c00;
   border-color: #f9a825;
 }
-
 .toast-info {
-  background: #e8f5e9;
-  color: #1b5e20;
-  border-color: #66bb6a;
+  background: #fff8e1;
+  color: #6d4c00;
+  border-color: #f9a825;
 }
+
 
 /* 🟢 Green toast for allow messages */
 .toast-allow {

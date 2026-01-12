@@ -154,7 +154,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
       const reference = normalizeReference(body?.reference);
       if (reference) {
         const refText = reference.additionalInfo || "מידע נוסף צורף להודעה";
-        setToast({ type: "info", text: `ℹ️ ${refText}` });
+        setToast({ type: "info", text: `🟡 ${refText}` });
       }
 
       // Optimistic append if socket hasn't delivered it yet
@@ -189,10 +189,11 @@ const ChatBoard = ({ roomId, currentUser }) => {
     const ref = msg.reference;
     const severity = getMsgSeverity(msg); // Get the same severity as the message bubble
     const detailsText =
-      `ℹ️ פרטי התראה\n` +
-      `הודעה: ${msg.text}\n\n` +
+      `🟡 פרטי התראה\n` +
       (ref.category ? `קטגוריה: ${ref.category}\n` : "") +
+      `הודעה: ${msg.text}\n` +
       (ref.additionalInfo ? `סיבה: ${ref.additionalInfo}` : "");
+
 
     console.log("[FRONTEND] Details text to show:", detailsText);
     setToast({ type: severity, text: detailsText });
@@ -229,7 +230,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
                 <div className="msg-row msg-text-row">
                   {msg.reference && (
                     <div className="reference-banner">
-                      ℹ️{" "}
+                      🟡{" "}
                       {msg.reference?.additionalInfo ||
                         "מידע נוסף ממקורות מהימנים"}
                       <span className="reference-hint"> (לחצי לפירוט)</span>
@@ -287,7 +288,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
         ) : (
         <SendIcon style={{ transform: "scaleX(-1)" }} />
          )}
-        </button>
+      </button>
 
         </div>
       </div>
