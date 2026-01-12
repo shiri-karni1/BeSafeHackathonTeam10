@@ -12,8 +12,8 @@ const ProtectedRoute = () => {
   }
 
   if (!isAuthenticated) {
-    console.log("User not authenticated, redirecting to login");
-    return <Navigate to="/login" replace />;
+    console.log("User not authenticated, redirecting to onboarding1");
+    return <Navigate to="/onBoarding/OnBoarding1" replace />;
   }
 
   return <Outlet />; // Render child routes
