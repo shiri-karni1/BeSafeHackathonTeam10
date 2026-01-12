@@ -64,9 +64,20 @@ router.post("/:id/messages", verifyToken, async (req, res) => {
     const { id } = req.params;
     const { text, username } = req.body;
 
-    // 1) Safety + Verification (BLOCK/WARN/APPROVE)
-    const check = await handleSafetyCheck(res, text, "Message");
+    // 0) Get the chat to access the original question
+    const chat = await dbService.getChatById(id);
+    if (!chat) return sendChatNotFound(res);
+
+    // 1) Safety + Verification (BLOCK/WARN/APPROVE) - pass question context
+    const question = `${chat.title}\n${chat.content}`;
+    console.log("[ROUTE] Message received:", text.substring(0, 50));
+    console.log("[ROUTE] Original question:", question.substring(0, 100));
+    
+    const check = await handleSafetyCheck(res, text, "Message", question);
     if (!check) return; // blocked (response already sent)
+
+    console.log("[ROUTE] Message passed safety check.");
+    console.log("[ROUTE] Reference info:", check.reference);
 
     // 2) Add to DB
     const savedMessage = await dbService.addMessageToChat(id, text, username, check.reference);

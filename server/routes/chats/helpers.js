@@ -10,8 +10,8 @@ export const sendChatNotFound = (res) =>
  * - ATTACH INFO  => returns { ok:true, reference:{...} }
  * - APPROVE      => returns { ok:true, reference:null }
  */
-export const handleSafetyCheck = async (res, text, contextType) => {
-  const result = await validateMessage({ text, contextType });
+export const handleSafetyCheck = async (res, text, contextType, question = null) => {
+  const result = await validateMessage({ text, contextType, question });
 
   // null = approved, no additional info
   if (!result) {
