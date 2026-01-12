@@ -3,6 +3,8 @@ import socketService from "../SocketFactory/SocketFactory";
 import PropTypes from "prop-types";
 import SendIcon from "@mui/icons-material/Send";
 import api from "../../services/axios.js";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+
 
 // ===== Date/Time Formatting =====
 const formatDate = (date) => {
@@ -66,6 +68,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
   const messagesEndRef = useRef(null);
 
   const [toast, setToast] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
   const socket = socketService.getSocket();
 
@@ -130,6 +133,7 @@ const ChatBoard = ({ roomId, currentUser }) => {
     const textToSend = inputValue.trim();
     if (!textToSend) return;
     setInputValue("");
+    setIsSending(true);
 
     try {
       const res = await api.post(`/chats/${roomId}/messages`, {
@@ -171,6 +175,8 @@ const ChatBoard = ({ roomId, currentUser }) => {
     } catch (err) {
       console.error("save message network error:", err);
       setToast({ type: "block", text: "🔴 בעיית רשת — ההודעה לא נשמרה" });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -271,9 +277,18 @@ const ChatBoard = ({ roomId, currentUser }) => {
               }
             }}
           />
-          <button onClick={handleSendMessage} className="send-btn">
-            <SendIcon style={{ transform: "scaleX(-1)" }} />
-          </button>
+          <button
+         onClick={handleSendMessage}
+         className="send-btn"
+         disabled={isSending}
+          >
+         {isSending ? (
+         <HourglassBottomIcon className="hourglass-icon" />
+        ) : (
+        <SendIcon style={{ transform: "scaleX(-1)" }} />
+         )}
+        </button>
+
         </div>
       </div>
     </div>

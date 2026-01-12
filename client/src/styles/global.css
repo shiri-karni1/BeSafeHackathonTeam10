@@ -372,3 +372,23 @@ code {
   color: #e65100;
   border-color: #ff9800;
 }
+/* ⏳ Hourglass sending animation */
+.hourglass-icon {
+  color: #9B718F;
+  animation: hourglass-flip 1.2s ease-in-out infinite;
+}
+
+@keyframes hourglass-flip {
+  0%   { transform: rotate(0deg); }
+  45%  { transform: rotate(0deg); }
+  55%  { transform: rotate(180deg); }
+  100% { transform: rotate(180deg); }
+}
+
+
+/* disable button while sending */
+.send-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
