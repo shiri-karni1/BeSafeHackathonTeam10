@@ -1,20 +1,33 @@
 # QueenB X AppsFlyer - BeSafe Hackathon 2026
 
-This project template is designed for junior developers aimed at gaining hands-on experience in full-stack development. 
-This project includes a Node.js server with Express and a React client (powered by Vite), providing an opportunity to engage in frontend development, backend development, and API integration.
-Specifically the template is a full-stack MERN application for managing a library of rubber ducks - but you can modify it and build a library application of your choice.
+## Project Presentation
+[View Project Presentation](PLACEHOLDER_ADD_PRESENTATION_LINK_HERE)
 
-## Introduction
-This template includes a simple feature to display a random rubber duck from example READ ONLY database. 
-This feature demonstrates the integration of the frontend with the backend and can be used to test if your setup is working correctly.
+## About BeSafe
 
-1. Client:
-   - The home page contains a button labeled `Show Random Duck`.
-   - When clicked, this button sends a request to the backend to fetch a random rubber duck.
-   - The details of the random rubber duck, including its name and image, are displayed on the page.
-2. Backend:
-   - The server has an endpoint `/api/rubberDucks/random` that selects a random rubber duck from the database and returns its details in the response.
-   - The server contains more endpoints, but without corresponding implementation in the client. These endpoints are to set example of more types of requests.
+BeSafe is a full-stack MERN application designed to provide a safe and supportive chat environment for teenagers. The platform combines real-time chat functionality with AI-powered safety features to ensure users can communicate freely while being protected from harmful content.
+
+### Key Features
+
+- **Real-time Chat**: Socket.io-based chat system enabling instant messaging
+- **AI Safety Agent**: Intelligent content monitoring and verification system
+- **User Authentication**: Secure registration and login system
+- **Onboarding Flow**: Guided introduction for new users
+- **Trusted Sources**: Curated information on topics relevant to teens including:
+  - Relationships and friendships
+  - Sexual health and consent
+  - Body image and nutrition
+  - Peer pressure and social life
+  - Education and hobbies
+  - Mental health and well-being
+
+### Technology Stack
+
+- **Frontend**: React with Vite, Socket.io-client
+- **Backend**: Node.js, Express, Socket.io
+- **Database**: MongoDB
+- **AI Integration**: Safety verification and content moderation agents
+- **Authentication**: JWT-based authentication
 
 ## Installation
 
@@ -73,9 +86,12 @@ This section explains how to use the application once it’s set up and configur
 
 ### Test the Application
 
-   - Click the `Show Random Duck` button to retrieve a random duck from the database and display its details on the screen.
-   - This feature helps verify that your frontend can communicate with the backend. If you see the random duck's details displayed on the page, your setup is working properly.
-   - You may also use an API client (like [Postman](https://www.postman.com/)) to directly test your API endpoints.
+   - Register a new account or login with existing credentials
+   - Complete the onboarding process
+   - Start a new chat conversation
+   - Test the real-time messaging functionality
+   - Observe the AI safety features in action
+   - You may also use an API client (like [Postman](https://www.postman.com/)) to directly test your API endpoints
 
 **Please report any issues or provide feedback for further improvements!**
 
@@ -100,16 +116,24 @@ Ensure backend and frontend configurations (`.env` files) are correct.
 
 ### Client Directory (`client/`)
 Contains the React (Vite) frontend application.
-- `package.json`: Lists the client-side dependencies and scripts for managing the React application.
-- `.env`: Stores environment variables like the API endpoint URL.
-- `index.html`: Main HTML page hosting all the React components of the application (frontend entry point)
-- `public/`: static assets that do not need to be processed by Vite's build pipeline. These files are copied as-is to the build output directory. In our case, the HTML's favicon.
+- `package.jsStatic assets that do not need to be processed by Vite's build pipeline.
 - `src/`: Contains the source code for the React application.
-   - `assets/`: assets that are part of the source code and need to be processed by Vite's build pipeline. This includes images, fonts, and other files that might be imported into your JS or CSS files. In our case, the QueenB summer camp logo.
-   - `components/`: Reusable UI components such as buttons, forms, and other elements.
-   - `context/`: Contains the React context for the ducks, responsible for pulling the current duck from the API
-   - `pages/`: Page components that represent different routes in the application.
-   - `services/`: Services for making API calls and handling business logic.
+   - `assets/`: Assets that are part of the source code and need to be processed by Vite's build pipeline.
+   - `components/`: Reusable UI components including:
+     - `ChatBoard/`: Main chat interface component
+     - `ChatCard/`: Individual chat message cards
+     - `ChatHeader/`: Chat header with navigation
+     - `navBar/`: Main navigation bar
+     - `ProtectedRoute/`: Route protection for authenticated users
+     - `SocketFactory/`: Socket.io connection management
+   - `context/`: React context providers for state management (AuthContext, DuckContext)
+   - `pages/`: Page components representing different routes:
+     - `HomePage/`: Landing page
+     - `login/` & `registration/`: Authentication pages
+     - `ChatThread/`: Individual chat conversations
+     - `NewChat/`: Create new chat interface
+     - `OnBoarding/`: User onboarding flow
+   - `services/`: Services for API calls and business logic (axios configuration)
    - `styles/`: CSS and styling files for the application.
    - `App.jsx`: The main React component that sets up routing and renders the application.
    - `index.jsx`: The entry point for the React application, responsible for rendering the App component into the DOM.
@@ -119,7 +143,18 @@ Contains the Node.js / Express backend application.
 - `package.json`: Lists the server-side dependencies and scripts for managing the Node.js application.
 - `.env`: Stores environment variables like database connection strings and server port.
 - `server.js`: The main server file that sets up Express, connects to the database, and starts the server (backend entry point).
-- `controllers/`: Contains the logic for handling API requests and responses.
+- `db/`: Database configuration and models
+  - `config/`: Database connection setup
+  - `models/`: MongoDB schemas (User, Chat)
+  - `crud/`: CRUD operations for database entities
+- `routes/`: API endpoints for users and chats
+- `services/`: Core business logic
+  - `agent/`: AI safety and verification agents
+  - `auth/`: Authentication middleware
+  - `socket/`: Real-time socket communication
+- `utils/`: Utility functions and trusted sources
+  - `trustedSources/`: Curated information on various teen topics
+- `docs/`: API documentation (Swagger)
 - `data/`: Contains the initial duck data (readonly database)
 - `images/`: Contains the duck images referenced by the duck data above
 - `routes/`: Defines the API endpoints and maps them to controller functions.
