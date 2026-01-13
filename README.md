@@ -3,7 +3,7 @@
 ## Project Presentation
 [View Project Presentation](https://www.canva.com/design/DAG9oEP4uno/sfSXt1wwMUXi6fwrzUMg0Q/edit)
 
-## About IMo
+## About IMO
 
 IMO is a full-stack MERN application designed to provide a safe and supportive chat environment for teenagers. The platform combines real-time chat functionality with AI-powered safety features to ensure users can communicate freely while being protected from harmful content.
 
