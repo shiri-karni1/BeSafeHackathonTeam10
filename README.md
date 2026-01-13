@@ -1,7 +1,7 @@
 # QueenB X AppsFlyer - BeSafe Hackathon 2026
 
 ## Project Presentation
-[View Project Presentation](PLACEHOLDER_ADD_PRESENTATION_LINK_HERE)
+[View Project Presentation](https://www.canva.com/design/DAG9oEP4uno/sfSXt1wwMUXi6fwrzUMg0Q/edit)
 
 ## About BeSafe
 
